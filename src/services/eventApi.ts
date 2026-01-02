@@ -34,8 +34,14 @@ export const regions = [
 const API_KEY = "SHAHG";
 const BASE_URL = "https://x-ff.vercel.app/event";
 
+// Use CORS proxy to bypass browser restrictions
+const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+
 export const fetchEvents = async (region: string): Promise<ApiResponse> => {
-  const response = await fetch(`${BASE_URL}?region=${region}&key=${API_KEY}`);
+  const apiUrl = `${BASE_URL}?region=${region}&key=${API_KEY}`;
+  const proxyUrl = `${CORS_PROXY}${encodeURIComponent(apiUrl)}`;
+  
+  const response = await fetch(proxyUrl);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch events: ${response.statusText}`);
