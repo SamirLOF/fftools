@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export interface ApiEvent {
   Title: string;
   Start: string;
@@ -34,21 +36,39 @@ export const regions = [
 const API_KEY = "SHAHG";
 const BASE_URL = "https://x-ff.vercel.app/event";
 
-// Use CORS proxy to bypass browser restrictions
+// Fallback CORS proxy (only used if Cloud function fails)
 const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 
 export const fetchEvents = async (region: string): Promise<ApiResponse> => {
-  const apiUrl = `${BASE_URL}?region=${region}&key=${API_KEY}`;
-  const proxyUrl = `${CORS_PROXY}${encodeURIComponent(apiUrl)}`;
-  
-  const response = await fetch(proxyUrl);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch events: ${response.statusText}`);
+  const regionUpper = region.toUpperCase();
+
+  // 1) Prefer Lovable Cloud function (most reliable)
+  try {
+    const { data, error } = await supabase.functions.invoke<ApiResponse>(
+      "events-proxy",
+      {
+        body: { region: regionUpper },
+      }
+    );
+
+    if (error) throw error;
+    if (!data) throw new Error("No data returned");
+
+    return data;
+  } catch {
+    // 2) Fallback: public proxy
+    const apiUrl = `${BASE_URL}?region=${regionUpper}&key=${API_KEY}`;
+    const proxyUrl = `${CORS_PROXY}${encodeURIComponent(apiUrl)}`;
+
+    const response = await fetch(proxyUrl);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch events: ${response.statusText}`);
+    }
+
+    const data: ApiResponse = await response.json();
+    return data;
   }
-  
-  const data: ApiResponse = await response.json();
-  return data;
 };
 
 export const getEventStatus = (startDate: string, endDate: string): "upcoming" | "active" | "ended" => {
