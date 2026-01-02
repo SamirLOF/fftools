@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
 import EventCardSkeleton from "@/components/EventCardSkeleton";
 import SectionTitle from "@/components/SectionTitle";
+import HistorySection from "@/components/HistorySection";
 import { Button } from "@/components/ui/button";
 import { useEvents } from "@/hooks/useEvents";
 import { sortEvents } from "@/services/eventApi";
@@ -113,6 +114,9 @@ const Index = () => {
                 </div>
               </section>
             )}
+
+            {/* History Section */}
+            <HistorySection region={selectedRegion} />
           </>
         )}
       </main>
