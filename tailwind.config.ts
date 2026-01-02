@@ -15,7 +15,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Rajdhani', 'system-ui', 'sans-serif'],
-        display: ['Bebas Neue', 'sans-serif'],
+        display: ['Orbitron', 'sans-serif'],
+        anime: ['Black Ops One', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -51,14 +52,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        gold: {
-          DEFAULT: "hsl(var(--gold))",
-          glow: "hsl(var(--gold-glow))",
+        cursed: {
+          blue: "hsl(var(--cursed-blue))",
+          "blue-glow": "hsl(var(--cursed-blue-glow))",
+          purple: "hsl(var(--cursed-purple))",
+          "purple-glow": "hsl(var(--cursed-purple-glow))",
+          pink: "hsl(var(--cursed-pink))",
         },
-        cyan: {
-          DEFAULT: "hsl(var(--cyan))",
-          glow: "hsl(var(--cyan-glow))",
-        },
+        infinity: "hsl(var(--infinity))",
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
@@ -94,14 +95,19 @@ export default {
         },
         float: {
           "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-5px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "cursed-energy": {
+          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.05)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         shimmer: "shimmer 2s linear infinite",
-        float: "float 3s ease-in-out infinite",
+        float: "float 4s ease-in-out infinite",
+        "cursed-energy": "cursed-energy 3s ease-in-out infinite",
       },
     },
   },

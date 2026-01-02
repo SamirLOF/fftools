@@ -16,7 +16,6 @@ const EventCard = ({ title, image, startDate, endDate }: EventCardProps) => {
   const [copied, setCopied] = useState(false);
   const status = getEventStatus(startDate, endDate);
   
-  // Don't show ended events
   if (status === "ended") return null;
 
   const copyBannerLink = async (e: React.MouseEvent) => {
@@ -24,15 +23,15 @@ const EventCard = ({ title, image, startDate, endDate }: EventCardProps) => {
     try {
       await navigator.clipboard.writeText(image);
       setCopied(true);
-      toast.success("Banner link copied!");
+      toast.success("Cursed link copied!");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy link");
+      toast.error("Technique failed");
     }
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-lg glass-card transition-all duration-500 hover:scale-[1.02]">
+    <div className="group relative overflow-hidden rounded-lg cursed-card transition-all duration-500 hover:scale-[1.02]">
       <StatusBadge status={status} />
       
       {/* Image Container */}
@@ -43,17 +42,17 @@ const EventCard = ({ title, image, startDate, endDate }: EventCardProps) => {
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           loading="lazy"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = "https://via.placeholder.com/700x400?text=Event+Banner";
+            (e.target as HTMLImageElement).src = "https://via.placeholder.com/700x400?text=Cursed+Banner";
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
         
-        {/* Copy Banner Button */}
+        {/* Copy Button */}
         <Button
           size="sm"
           variant="secondary"
           onClick={copyBannerLink}
-          className="absolute bottom-3 right-3 h-9 px-3 gap-2 text-sm font-semibold bg-background/90 backdrop-blur-md hover:bg-primary hover:text-primary-foreground border border-border/50 transition-all"
+          className="absolute bottom-3 right-3 h-9 px-3 gap-2 text-sm font-bold bg-background/90 backdrop-blur-md hover:bg-primary hover:text-primary-foreground border border-primary/30 transition-all"
         >
           {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
           {copied ? "Copied!" : "Copy"}
@@ -62,17 +61,17 @@ const EventCard = ({ title, image, startDate, endDate }: EventCardProps) => {
 
       {/* Content */}
       <div className="p-5 space-y-4">
-        <h3 className="font-bold text-foreground text-xl leading-tight line-clamp-2 group-hover:text-primary transition-colors font-body">
-          {title || "Untitled Event"}
+        <h3 className="font-bold text-foreground text-xl leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+          {title || "Unknown Curse"}
         </h3>
 
         <div className="space-y-2">
-          <div className="flex items-center gap-3 text-sm font-medium">
+          <div className="flex items-center gap-3 text-sm font-semibold">
             <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
             <span className="text-foreground/90">{startDate || "N/A"}</span>
           </div>
-          <div className="flex items-center gap-3 text-sm font-medium">
-            <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          <div className="flex items-center gap-3 text-sm font-semibold">
+            <Clock className="w-4 h-4 text-secondary flex-shrink-0" />
             <span className="text-muted-foreground">{endDate || "N/A"}</span>
           </div>
         </div>
