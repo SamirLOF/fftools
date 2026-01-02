@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      event_history: {
+        Row: {
+          banner: string
+          created_at: string
+          details: string | null
+          end_date: string
+          event_type: string
+          id: string
+          link: string | null
+          region: string
+          removed_at: string
+          start_date: string
+          title: string
+        }
+        Insert: {
+          banner: string
+          created_at?: string
+          details?: string | null
+          end_date: string
+          event_type?: string
+          id?: string
+          link?: string | null
+          region: string
+          removed_at?: string
+          start_date: string
+          title: string
+        }
+        Update: {
+          banner?: string
+          created_at?: string
+          details?: string | null
+          end_date?: string
+          event_type?: string
+          id?: string
+          link?: string | null
+          region?: string
+          removed_at?: string
+          start_date?: string
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
