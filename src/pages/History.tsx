@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useEventHistoryPaginated } from "@/hooks/useEventHistory";
+import { useSelectedRegion } from "@/hooks/useSelectedRegion";
 import { regions } from "@/services/eventApi";
 
 const PAGE_SIZE = 12;
 
 const History = () => {
-  const [selectedRegion, setSelectedRegion] = useState("SG");
+  const [selectedRegion, setSelectedRegion] = useSelectedRegion("SG");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [activeTab, setActiveTab] = useState<'all' | 'event' | 'update'>('all');

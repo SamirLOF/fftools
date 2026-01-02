@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { AlertCircle, RefreshCw, History } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -7,10 +7,11 @@ import EventCardSkeleton from "@/components/EventCardSkeleton";
 import SectionTitle from "@/components/SectionTitle";
 import { Button } from "@/components/ui/button";
 import { useEvents } from "@/hooks/useEvents";
+import { useSelectedRegion } from "@/hooks/useSelectedRegion";
 import { sortEvents } from "@/services/eventApi";
 
 const Index = () => {
-  const [selectedRegion, setSelectedRegion] = useState("SG");
+  const [selectedRegion, setSelectedRegion] = useSelectedRegion("SG");
   const { data, isLoading, error, refetch, isFetching } = useEvents(selectedRegion);
 
   // Sort events: upcoming first, then by newest start date
