@@ -31,7 +31,7 @@ const History = () => {
   // Debounce search
   const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
-    setCurrentPage(1); // Reset to first page on search
+    setCurrentPage(1);
     const timeout = setTimeout(() => {
       setDebouncedQuery(value);
     }, 300);
@@ -40,14 +40,15 @@ const History = () => {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as 'all' | 'event' | 'update');
-    setCurrentPage(1); // Reset to first page on tab change
+    setCurrentPage(1);
   };
 
   const handleRegionChange = (region: string) => {
     setSelectedRegion(region);
-    setCurrentPage(1); // Reset to first page on region change
-    setSearchQuery(""); // Clear search
+    setCurrentPage(1);
+    setSearchQuery("");
     setDebouncedQuery("");
+    setActiveTab("all");
   };
 
   return (
