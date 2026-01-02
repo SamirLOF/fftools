@@ -1,4 +1,4 @@
-import { Flame, Globe, ChevronDown } from "lucide-react";
+import { Flame, Globe } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -6,16 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const regions = [
-  { code: "SG", name: "Singapore" },
-  { code: "BD", name: "Bangladesh" },
-  { code: "IN", name: "India" },
-  { code: "ID", name: "Indonesia" },
-  { code: "TH", name: "Thailand" },
-  { code: "VN", name: "Vietnam" },
-  { code: "BR", name: "Brazil" },
-];
+import { regions } from "@/services/eventApi";
 
 interface HeaderProps {
   selectedRegion: string;
