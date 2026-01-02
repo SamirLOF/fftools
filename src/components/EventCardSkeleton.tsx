@@ -1,17 +1,12 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 const EventCardSkeleton = () => {
   return (
-    <div className="relative overflow-hidden rounded-lg bg-card card-glow animate-pulse">
-      {/* Image Skeleton */}
-      <div className="aspect-[16/10] bg-muted" />
-
-      {/* Content Skeleton */}
-      <div className="p-4 space-y-3">
-        <div className="h-6 bg-muted rounded w-3/4" />
-        
-        <div className="space-y-2">
-          <div className="h-4 bg-muted rounded w-full" />
-          <div className="h-4 bg-muted rounded w-2/3" />
-        </div>
+    <div className="overflow-hidden rounded-lg cursed-card">
+      <Skeleton className="aspect-[16/10] w-full" />
+      <div className="p-3 space-y-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-3 w-2/3" />
       </div>
     </div>
   );

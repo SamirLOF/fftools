@@ -1,4 +1,4 @@
-import { Calendar, Clock, Copy, Check } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import { useState } from "react";
 import StatusBadge from "./StatusBadge";
 import { getEventStatus } from "@/services/eventApi";
@@ -23,58 +23,50 @@ const EventCard = ({ title, image, startDate, endDate }: EventCardProps) => {
     try {
       await navigator.clipboard.writeText(image);
       setCopied(true);
-      toast.success("Cursed link copied!");
+      toast.success("Link copied!");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Technique failed");
+      toast.error("Copy failed");
     }
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-lg cursed-card transition-all duration-500 hover:scale-[1.02]">
+    <div className="group relative overflow-hidden rounded-lg cursed-card transition-all duration-300 hover:scale-[1.02]">
       <StatusBadge status={status} />
       
       {/* Image Container */}
       <div className="relative aspect-[16/10] overflow-hidden">
         <img
           src={image}
-          alt={`${title} event banner`}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          alt={title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = "https://via.placeholder.com/700x400?text=Cursed+Banner";
+            (e.target as HTMLImageElement).src = "https://via.placeholder.com/700x400?text=Event";
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
         
         {/* Copy Button */}
         <Button
           size="sm"
           variant="secondary"
           onClick={copyBannerLink}
-          className="absolute bottom-3 right-3 h-9 px-3 gap-2 text-sm font-bold bg-background/90 backdrop-blur-md hover:bg-primary hover:text-primary-foreground border border-primary/30 transition-all"
+          className="absolute bottom-2 right-2 h-7 px-2 gap-1 text-xs font-bold bg-background/90 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground border border-primary/30"
         >
-          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-          {copied ? "Copied!" : "Copy"}
+          {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          {copied ? "Done" : "Copy"}
         </Button>
       </div>
 
       {/* Content */}
-      <div className="p-5 space-y-4">
-        <h3 className="font-bold text-foreground text-xl leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-          {title || "Unknown Curse"}
+      <div className="p-3">
+        <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2">
+          {title || "Untitled Event"}
         </h3>
-
-        <div className="space-y-2">
-          <div className="flex items-center gap-3 text-sm font-semibold">
-            <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
-            <span className="text-foreground/90">{startDate || "N/A"}</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm font-semibold">
-            <Clock className="w-4 h-4 text-secondary flex-shrink-0" />
-            <span className="text-muted-foreground">{endDate || "N/A"}</span>
-          </div>
-        </div>
+        <p className="text-xs text-muted-foreground mt-1.5 font-medium">
+          {startDate} — {endDate}
+        </p>
       </div>
     </div>
   );
