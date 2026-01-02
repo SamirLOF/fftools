@@ -1,7 +1,6 @@
-import { Calendar, Clock, Copy, Check, History, Globe } from "lucide-react";
+import { Calendar, Clock, Copy, Check, Archive, Globe } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 import { toast } from "sonner";
 import { HistoryEvent } from "@/services/historyService";
 import { regions } from "@/services/eventApi";
@@ -31,22 +30,24 @@ const HistoryCard = ({ event }: HistoryCardProps) => {
       year: "numeric",
       month: "short",
       day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-lg bg-card border border-border/50 transition-all duration-300 hover:border-primary/30">
-      {/* Region & Archived Badge */}
-      <div className="absolute top-2 left-2 z-10 flex items-center gap-2">
-        <Badge variant="secondary" className="gap-1 text-xs bg-primary/90 text-primary-foreground backdrop-blur-sm">
-          <Globe className="w-3 h-3" />
-          {event.region}
-        </Badge>
-        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/90 backdrop-blur-sm text-xs text-muted-foreground">
-          <History className="w-3 h-3" />
-          <span>Archived</span>
+    <div className="group relative overflow-hidden rounded-lg glass-card transition-all duration-500 opacity-85 hover:opacity-100">
+      {/* Badges */}
+      <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-primary/90 backdrop-blur-sm">
+          <Globe className="w-3.5 h-3.5 text-primary-foreground" />
+          <span className="font-display text-sm tracking-wider text-primary-foreground">
+            {event.region}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-muted/90 backdrop-blur-sm">
+          <Archive className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="font-display text-sm tracking-wider text-muted-foreground">
+            ARCHIVED
+          </span>
         </div>
       </div>
 
@@ -55,45 +56,47 @@ const HistoryCard = ({ event }: HistoryCardProps) => {
         <img
           src={event.banner}
           alt={`${event.title} event banner`}
-          className="w-full h-full object-cover opacity-75"
+          className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-500"
           loading="lazy"
           onError={(e) => {
             (e.target as HTMLImageElement).src =
               "https://via.placeholder.com/700x400?text=Event+Banner";
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
 
         {/* Copy Banner Button */}
         <Button
           size="sm"
           variant="secondary"
           onClick={copyBannerLink}
-          className="absolute bottom-2 right-2 h-8 px-2 gap-1 text-xs bg-background/80 backdrop-blur-sm hover:bg-background"
+          className="absolute bottom-3 right-3 h-9 px-3 gap-2 text-sm font-semibold bg-background/90 backdrop-blur-md hover:bg-primary hover:text-primary-foreground border border-border/50 transition-all"
         >
-          {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-          {copied ? "Copied" : "Copy Link"}
+          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+          {copied ? "Copied!" : "Copy"}
         </Button>
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-3">
-        <h3 className="font-semibold text-foreground text-lg leading-tight line-clamp-2">
+      <div className="p-5 space-y-4">
+        <h3 className="font-bold text-foreground text-xl leading-tight line-clamp-2 font-body">
           {event.title || "Untitled Event"}
         </h3>
 
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm font-medium">
             <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
-            <span>Start: {event.start_date || "N/A"}</span>
+            <span className="text-foreground/90">{event.start_date || "N/A"}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm font-medium">
             <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            <span>End: {event.end_date || "N/A"}</span>
+            <span className="text-muted-foreground">{event.end_date || "N/A"}</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
-            <History className="w-3 h-3 flex-shrink-0" />
-            <span>Archived: {formatDate(event.removed_at)}</span>
+          <div className="flex items-center gap-3 text-xs font-medium pt-1 border-t border-border/30">
+            <Archive className="w-3.5 h-3.5 text-muted-foreground/70 flex-shrink-0" />
+            <span className="text-muted-foreground/70">
+              Archived {formatDate(event.removed_at)}
+            </span>
           </div>
         </div>
       </div>
