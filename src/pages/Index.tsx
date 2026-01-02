@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
@@ -6,10 +6,22 @@ import EventCardSkeleton from "@/components/EventCardSkeleton";
 import SectionTitle from "@/components/SectionTitle";
 import { Button } from "@/components/ui/button";
 import { useEvents } from "@/hooks/useEvents";
+import { sortEvents } from "@/services/eventApi";
 
 const Index = () => {
   const [selectedRegion, setSelectedRegion] = useState("SG");
   const { data, isLoading, error, refetch, isFetching } = useEvents(selectedRegion);
+
+  // Sort events: upcoming first, then by newest start date
+  const sortedEvents = useMemo(() => {
+    if (!data?.events) return [];
+    return sortEvents(data.events);
+  }, [data?.events]);
+
+  const sortedUpdates = useMemo(() => {
+    if (!data?.updates) return [];
+    return sortEvents(data.updates);
+  }, [data?.updates]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,9 +77,9 @@ const Index = () => {
                   <RefreshCw className="w-5 h-5 animate-spin text-primary" />
                 )}
               </div>
-              {data.events.length > 0 ? (
+              {sortedEvents.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {data.events.map((event, index) => (
+                  {sortedEvents.map((event, index) => (
                     <EventCard
                       key={`${event.Title}-${index}`}
                       title={event.Title}
@@ -85,11 +97,11 @@ const Index = () => {
             </section>
 
             {/* Announcements/Updates Section */}
-            {data.updates && data.updates.length > 0 && (
+            {sortedUpdates.length > 0 && (
               <section>
                 <SectionTitle title="Announcements" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {data.updates.map((update, index) => (
+                  {sortedUpdates.map((update, index) => (
                     <EventCard
                       key={`${update.Title}-${index}`}
                       title={update.Title}
