@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, RefreshCw, History } from "lucide-react";
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
 import EventCardSkeleton from "@/components/EventCardSkeleton";
 import SectionTitle from "@/components/SectionTitle";
-import HistorySection from "@/components/HistorySection";
 import { Button } from "@/components/ui/button";
 import { useEvents } from "@/hooks/useEvents";
 import { sortEvents } from "@/services/eventApi";
@@ -115,8 +115,18 @@ const Index = () => {
               </section>
             )}
 
-            {/* History Section */}
-            <HistorySection region={selectedRegion} />
+            {/* View History Link */}
+            <section className="text-center py-8 border-t border-border/50">
+              <p className="text-muted-foreground mb-4">
+                Looking for past events that are no longer available?
+              </p>
+              <Link to="/history">
+                <Button variant="outline" className="gap-2">
+                  <History className="w-4 h-4" />
+                  View Event History
+                </Button>
+              </Link>
+            </section>
           </>
         )}
       </main>
