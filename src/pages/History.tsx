@@ -1,12 +1,14 @@
 import { useState, useCallback } from "react";
-import { Search, History as HistoryIcon, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Search, History as HistoryIcon, ChevronLeft, ChevronRight, Loader2, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import HistoryCard from "@/components/HistoryCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { useEventHistoryPaginated } from "@/hooks/useEventHistory";
+import { regions } from "@/services/eventApi";
 
 const PAGE_SIZE = 12;
 
@@ -23,6 +25,8 @@ const History = () => {
     searchQuery: debouncedQuery,
     eventType: activeTab,
   });
+
+  const selectedRegionData = regions.find((r) => r.code === selectedRegion);
 
   // Debounce search
   const handleSearch = useCallback((value: string) => {
@@ -42,6 +46,8 @@ const History = () => {
   const handleRegionChange = (region: string) => {
     setSelectedRegion(region);
     setCurrentPage(1); // Reset to first page on region change
+    setSearchQuery(""); // Clear search
+    setDebouncedQuery("");
   };
 
   return (
@@ -60,9 +66,14 @@ const History = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <HistoryIcon className="w-6 h-6 text-primary" />
             <h1 className="text-2xl font-bold text-foreground">Event History</h1>
+            {/* Region Badge */}
+            <Badge variant="secondary" className="gap-1.5 text-sm">
+              <Globe className="w-3.5 h-3.5" />
+              {selectedRegionData?.code} - {selectedRegionData?.name}
+            </Badge>
           </div>
 
           {/* Search Input */}
@@ -76,6 +87,13 @@ const History = () => {
               className="pl-9 bg-card border-border"
             />
           </div>
+        </div>
+
+        {/* Info Banner */}
+        <div className="bg-muted/50 border border-border rounded-lg p-4 mb-6">
+          <p className="text-sm text-muted-foreground">
+            <strong className="text-foreground">How it works:</strong> When events are removed from the API for <strong className="text-primary">{selectedRegionData?.name}</strong>, they are automatically saved here. Select a different region from the header to view its archived banners.
+          </p>
         </div>
 
         {/* Tabs */}
@@ -133,7 +151,7 @@ const History = () => {
 
                 {/* Total Count */}
                 <p className="text-center text-sm text-muted-foreground mt-4">
-                  Showing {data.data.length} of {data.total} archived events
+                  Showing {data.data.length} of {data.total} archived events for {selectedRegionData?.name}
                 </p>
               </>
             ) : (
@@ -141,11 +159,14 @@ const History = () => {
                 <HistoryIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <p className="text-lg">
                   {searchQuery
-                    ? "No events found matching your search"
-                    : "No archived events yet for this region"}
+                    ? `No events found matching "${searchQuery}"`
+                    : `No archived events yet for ${selectedRegionData?.name}`}
                 </p>
                 <p className="text-sm mt-2">
-                  Events will appear here when they are removed from the API
+                  Events will appear here when they are removed from the {selectedRegionData?.code} region API
+                </p>
+                <p className="text-xs mt-4 text-muted-foreground/70">
+                  Try selecting a different region from the header dropdown
                 </p>
               </div>
             )}
