@@ -60,3 +60,23 @@ export const getEventStatus = (startDate: string, endDate: string): "upcoming" |
   if (now >= start && now <= end) return "active";
   return "ended";
 };
+
+// Sort events: Upcoming first, then by start date (newest first)
+export const sortEvents = (events: ApiEvent[]): ApiEvent[] => {
+  return [...events].sort((a, b) => {
+    const statusA = getEventStatus(a.Start, a.End);
+    const statusB = getEventStatus(b.Start, b.End);
+    
+    // Priority: upcoming > active > ended
+    const statusOrder = { upcoming: 0, active: 1, ended: 2 };
+    
+    if (statusOrder[statusA] !== statusOrder[statusB]) {
+      return statusOrder[statusA] - statusOrder[statusB];
+    }
+    
+    // Within same status, sort by start date (newest first)
+    const dateA = new Date(a.Start).getTime();
+    const dateB = new Date(b.Start).getTime();
+    return dateB - dateA;
+  });
+};
