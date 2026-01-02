@@ -5,7 +5,7 @@ export const useEventHistory = (region: string, searchQuery: string = "") => {
   return useQuery<HistoryEvent[], Error>({
     queryKey: ["eventHistory", region, searchQuery],
     queryFn: () => getHistory(region, searchQuery),
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 0, // Always fetch fresh data
   });
 };
 
@@ -19,8 +19,17 @@ export const useEventHistoryPaginated = (
   }
 ) => {
   return useQuery<PaginatedHistory, Error>({
-    queryKey: ["eventHistoryPaginated", region, options],
+    // Use region as first key element for proper cache separation
+    queryKey: [
+      "eventHistoryPaginated",
+      region,
+      options.page,
+      options.pageSize || 12,
+      options.searchQuery || '',
+      options.eventType || 'all',
+    ],
     queryFn: () => getHistoryPaginated(region, options),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0, // Always fetch fresh data when region changes
+    refetchOnMount: true,
   });
 };

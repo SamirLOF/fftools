@@ -1,8 +1,10 @@
-import { Calendar, Clock, Copy, Check, History } from "lucide-react";
+import { Calendar, Clock, Copy, Check, History, Globe } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { toast } from "sonner";
 import { HistoryEvent } from "@/services/historyService";
+import { regions } from "@/services/eventApi";
 
 interface HistoryCardProps {
   event: HistoryEvent;
@@ -10,6 +12,7 @@ interface HistoryCardProps {
 
 const HistoryCard = ({ event }: HistoryCardProps) => {
   const [copied, setCopied] = useState(false);
+  const regionData = regions.find((r) => r.code === event.region);
 
   const copyBannerLink = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -35,10 +38,16 @@ const HistoryCard = ({ event }: HistoryCardProps) => {
 
   return (
     <div className="group relative overflow-hidden rounded-lg bg-card border border-border/50 transition-all duration-300 hover:border-primary/30">
-      {/* Removed Badge */}
-      <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-1 rounded-full bg-muted/90 backdrop-blur-sm text-xs text-muted-foreground">
-        <History className="w-3 h-3" />
-        <span>Archived</span>
+      {/* Region & Archived Badge */}
+      <div className="absolute top-2 left-2 z-10 flex items-center gap-2">
+        <Badge variant="secondary" className="gap-1 text-xs bg-primary/90 text-primary-foreground backdrop-blur-sm">
+          <Globe className="w-3 h-3" />
+          {event.region}
+        </Badge>
+        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/90 backdrop-blur-sm text-xs text-muted-foreground">
+          <History className="w-3 h-3" />
+          <span>Archived</span>
+        </div>
       </div>
 
       {/* Image Container */}
