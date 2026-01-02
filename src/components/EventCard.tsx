@@ -1,6 +1,9 @@
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Copy, Check } from "lucide-react";
+import { useState } from "react";
 import StatusBadge from "./StatusBadge";
 import { getEventStatus } from "@/services/eventApi";
+import { Button } from "./ui/button";
+import { toast } from "sonner";
 
 interface EventCardProps {
   title: string;
@@ -10,10 +13,23 @@ interface EventCardProps {
 }
 
 const EventCard = ({ title, image, startDate, endDate }: EventCardProps) => {
+  const [copied, setCopied] = useState(false);
   const status = getEventStatus(startDate, endDate);
   
   // Don't show ended events
   if (status === "ended") return null;
+
+  const copyBannerLink = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(image);
+      setCopied(true);
+      toast.success("Banner link copied!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
 
   return (
     <div className="group relative overflow-hidden rounded-lg bg-card card-glow transition-all duration-300 hover:scale-[1.02] cursor-pointer">
@@ -31,6 +47,17 @@ const EventCard = ({ title, image, startDate, endDate }: EventCardProps) => {
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-60" />
+        
+        {/* Copy Banner Button */}
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={copyBannerLink}
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 h-8 px-2 gap-1 text-xs"
+        >
+          {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          {copied ? "Copied" : "Copy Link"}
+        </Button>
       </div>
 
       {/* Content */}
