@@ -14,6 +14,14 @@ export interface HistoryEvent {
   removed_at: string;
 }
 
+export interface PaginatedHistory {
+  data: HistoryEvent[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 // Save removed events to history
 export const saveToHistory = async (
   events: ApiEvent[],
@@ -42,29 +50,78 @@ export const saveToHistory = async (
     });
 };
 
-// Get history for a specific region
+// Get paginated history for a specific region
+export const getHistoryPaginated = async (
+  region: string,
+  options: {
+    page?: number;
+    pageSize?: number;
+    searchQuery?: string;
+    eventType?: 'event' | 'update' | 'all';
+  } = {}
+): Promise<PaginatedHistory> => {
+  const { page = 1, pageSize = 12, searchQuery, eventType = 'all' } = options;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  // Build count query
+  let countQuery = supabase
+    .from("event_history")
+    .select("*", { count: "exact", head: true })
+    .eq("region", region);
+
+  if (eventType !== 'all') {
+    countQuery = countQuery.eq("event_type", eventType);
+  }
+
+  if (searchQuery && searchQuery.trim()) {
+    countQuery = countQuery.ilike("title", `%${searchQuery}%`);
+  }
+
+  const { count } = await countQuery;
+
+  // Build data query
+  let dataQuery = supabase
+    .from("event_history")
+    .select("*")
+    .eq("region", region)
+    .order("removed_at", { ascending: false })
+    .range(from, to);
+
+  if (eventType !== 'all') {
+    dataQuery = dataQuery.eq("event_type", eventType);
+  }
+
+  if (searchQuery && searchQuery.trim()) {
+    dataQuery = dataQuery.ilike("title", `%${searchQuery}%`);
+  }
+
+  const { data, error } = await dataQuery;
+
+  if (error) {
+    console.error("Error fetching history:", error);
+    return { data: [], total: 0, page, pageSize, totalPages: 0 };
+  }
+
+  const total = count || 0;
+  const totalPages = Math.ceil(total / pageSize);
+
+  return {
+    data: data || [],
+    total,
+    page,
+    pageSize,
+    totalPages,
+  };
+};
+
+// Simple get history (for backward compatibility)
 export const getHistory = async (
   region: string,
   searchQuery?: string
 ): Promise<HistoryEvent[]> => {
-  let query = supabase
-    .from("event_history")
-    .select("*")
-    .eq("region", region)
-    .order("removed_at", { ascending: false });
-
-  if (searchQuery && searchQuery.trim()) {
-    query = query.ilike("title", `%${searchQuery}%`);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error("Error fetching history:", error);
-    return [];
-  }
-
-  return data || [];
+  const result = await getHistoryPaginated(region, { searchQuery, pageSize: 100 });
+  return result.data;
 };
 
 // Compare current events with previous and detect removed ones
