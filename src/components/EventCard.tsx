@@ -53,7 +53,7 @@ const EventCard = ({ title, image, startDate, endDate }: EventCardProps) => {
           size="sm"
           variant="secondary"
           onClick={copyBannerLink}
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 h-8 px-2 gap-1 text-xs"
+          className="absolute bottom-2 right-2 h-8 px-2 gap-1 text-xs bg-background/80 backdrop-blur-sm hover:bg-background"
         >
           {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           {copied ? "Copied" : "Copy Link"}
