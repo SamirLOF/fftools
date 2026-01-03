@@ -11,6 +11,7 @@ const navItems = [
   { title: "Events", url: "/", icon: Calendar },
   { title: "Explore Tools", url: "/tools", icon: Sparkles },
   { title: "Chat", url: "/chat", icon: MessageCircle },
+  { title: "Premium", url: "/premium", icon: Crown },
   { title: "About", url: "/about", icon: Info },
   { title: "Pricing", url: "/pricing", icon: CreditCard },
 ];
