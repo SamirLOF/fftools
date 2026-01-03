@@ -120,7 +120,7 @@ const About = () => {
               className="text-center mb-16"
             >
               <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">
-                About <span className="text-primary">FF Events</span>
+                About <span className="text-primary">FF Tools</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                 Your ultimate companion for tracking Free Fire events, updates, and announcements across all regions.

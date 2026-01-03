@@ -63,9 +63,9 @@ const AppSidebar = () => {
             </div>
             <div>
               <span className="text-lg font-bold text-foreground tracking-tight">
-                FF Events
+                FF Tools
               </span>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Game Tracker</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Game Changer</p>
             </div>
           </div>
 

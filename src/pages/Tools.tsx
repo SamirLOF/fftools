@@ -197,6 +197,13 @@ const Tools = () => {
                 Submit Request
               </Button>
             </motion.div>
+
+            {/* Footer */}
+            <footer className="py-4 border-t border-border/50 mt-8">
+              <p className="text-xs text-muted-foreground text-center">
+                © {new Date().getFullYear()} <span className="text-primary font-medium">LEAKS OF FF</span>. All rights reserved.
+              </p>
+            </footer>
           </div>
         </main>
       </div>
