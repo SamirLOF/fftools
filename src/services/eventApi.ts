@@ -45,7 +45,7 @@ export const fetchEvents = async (region: string): Promise<ApiResponse> => {
   const fetchJsonWithTimeout = async (
     url: string,
     options: RequestInit = {},
-    timeoutMs = 5000,
+    timeoutMs = 8000,
   ): Promise<ApiResponse> => {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -68,45 +68,30 @@ export const fetchEvents = async (region: string): Promise<ApiResponse> => {
 
   const directUrl = `${BASE_URL}?region=${regionUpper}&key=${API_KEY}`;
 
-  // Start the fastest options in parallel (prevents waiting 5s for a CORS fail)
-  const directPromise = fetchJsonWithTimeout(directUrl, {}, 2500);
-
-  const cloudPromise = (async () => {
+  // Try Cloud function first (most reliable), then direct, then proxy
+  try {
     const { data, error } = await supabase.functions.invoke<ApiResponse>(
       "events-proxy",
       { body: { region: regionUpper } },
     );
 
-    if (error) throw error;
-    if (!data) throw new Error("No data returned");
-    return data;
-  })();
-
-  const firstSuccess = <T,>(promises: Promise<T>[]) =>
-    new Promise<T>((resolve, reject) => {
-      let rejected = 0;
-      const errors: unknown[] = [];
-
-      promises.forEach((p) => {
-        p.then(resolve).catch((err) => {
-          errors.push(err);
-          rejected += 1;
-          if (rejected === promises.length) {
-            reject(errors[0] ?? new Error("All requests failed"));
-          }
-        });
-      });
-    });
-
-  try {
-    // First successful response wins (faster than waiting for a timeout then trying the next fallback)
-    return await firstSuccess([directPromise, cloudPromise]);
+    if (!error && data) {
+      return data;
+    }
   } catch {
-    // Both failed → last resort proxy
+    // Cloud function failed, continue to fallbacks
   }
 
+  // Try direct API
+  try {
+    return await fetchJsonWithTimeout(directUrl, {}, 8000);
+  } catch {
+    // Direct failed, continue to proxy
+  }
+
+  // Last resort: public CORS proxy
   const proxyUrl = `${CORS_PROXY}${encodeURIComponent(directUrl)}`;
-  return await fetchJsonWithTimeout(proxyUrl, {}, 8000);
+  return await fetchJsonWithTimeout(proxyUrl, {}, 10000);
 };
 
 export const getEventStatus = (startDate: string, endDate: string): "upcoming" | "active" | "ended" => {
