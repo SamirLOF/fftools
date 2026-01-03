@@ -6,10 +6,16 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Copy, Check, CalendarClock, CalendarCheck, Download, Play, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import StatusBadge from "./StatusBadge";
 import { getEventStatus } from "@/services/eventApi";
+
+declare global {
+  interface Window {
+    adsbygoogle: unknown[];
+  }
+}
 
 interface EventDetailDialogProps {
   open: boolean;
@@ -123,6 +129,15 @@ const EventDetailDialog = ({
     setAdCountdown(7);
     toast.info("Please wait while watching ad...");
     
+    // Push ad after a short delay to ensure DOM is ready
+    setTimeout(() => {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.log("AdSense error:", e);
+      }
+    }, 100);
+    
     // Countdown timer (7 seconds)
     const interval = setInterval(() => {
       setAdCountdown((prev) => {
@@ -225,6 +240,19 @@ const EventDetailDialog = ({
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Watching Ad...
                   </div>
+                  
+                  {/* Google AdSense Ad Unit */}
+                  <div className="w-full min-h-[100px] bg-secondary/50 rounded-lg flex items-center justify-center overflow-hidden">
+                    <ins
+                      className="adsbygoogle"
+                      style={{ display: "block", width: "100%", height: "100px" }}
+                      data-ad-client="ca-pub-6771046263927846"
+                      data-ad-slot="auto"
+                      data-ad-format="auto"
+                      data-full-width-responsive="true"
+                    />
+                  </div>
+                  
                   <div className="relative w-full h-2 bg-secondary rounded-full overflow-hidden">
                     <div 
                       className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-1000 ease-linear"
