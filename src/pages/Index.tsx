@@ -113,6 +113,8 @@ const Index = () => {
                           image={event.Banner}
                           startDate={event.Start}
                           endDate={event.End}
+                          details={event.Details}
+                          link={event.link}
                         />
                       </motion.div>
                     ))}
@@ -143,6 +145,8 @@ const Index = () => {
                           image={update.Banner}
                           startDate={update.Start}
                           endDate={update.End}
+                          details={update.Details}
+                          link={update.link}
                         />
                       </motion.div>
                     ))}
