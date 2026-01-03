@@ -5,7 +5,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Copy, Check, CalendarClock, CalendarCheck } from "lucide-react";
+import { ExternalLink, Copy, Check, CalendarClock, CalendarCheck, Download, Play, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import StatusBadge from "./StatusBadge";
@@ -33,6 +33,9 @@ const EventDetailDialog = ({
   link,
 }: EventDetailDialogProps) => {
   const [copied, setCopied] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [watchingAd, setWatchingAd] = useState(false);
+  const [adWatched, setAdWatched] = useState(false);
   const status = getEventStatus(startDate, endDate);
 
   const copyBannerLink = async () => {
@@ -46,8 +49,91 @@ const EventDetailDialog = ({
     }
   };
 
+  const downloadWithWatermark = async () => {
+    setIsDownloading(true);
+    try {
+      // Create canvas with watermark
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = image;
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d")!;
+      
+      // Draw image
+      ctx.drawImage(img, 0, 0);
+      
+      // Add watermark
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.font = `bold ${Math.max(img.width / 15, 24)}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      
+      // Add shadow for better visibility
+      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+      
+      ctx.fillText("LEAKS OF FF", canvas.width / 2, canvas.height / 2);
+      
+      // Download
+      const link = document.createElement("a");
+      link.download = `${title || "banner"}_leaksofff.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      
+      toast.success("Banner downloaded with watermark!");
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Failed to download. Try copying the link instead.");
+    }
+    setIsDownloading(false);
+  };
+
+  const downloadWithoutWatermark = async () => {
+    setIsDownloading(true);
+    try {
+      const response = await fetch(image);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = `${title || "banner"}.png`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success("Banner downloaded!");
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Failed to download");
+    }
+    setIsDownloading(false);
+  };
+
+  const watchAd = () => {
+    setWatchingAd(true);
+    toast.info("Please wait while watching ad...");
+    
+    // Simulate ad watch (5 seconds)
+    setTimeout(() => {
+      setWatchingAd(false);
+      setAdWatched(true);
+      toast.success("Ad completed! You can now download without watermark.");
+    }, 5000);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(open) => {
+      onOpenChange(open);
+      if (!open) setAdWatched(false);
+    }}>
       <DialogContent className="max-w-lg p-0 overflow-hidden rounded-2xl border-border/50 bg-card [&>button]:hidden">
         {/* Banner Image */}
         <div className="relative aspect-[16/10] overflow-hidden bg-muted/50">
@@ -103,6 +189,62 @@ const EventDetailDialog = ({
               <p className="text-sm text-foreground/90 leading-relaxed">{details}</p>
             </div>
           )}
+
+          {/* Download Options */}
+          <div className="p-3 rounded-xl bg-secondary/30 border border-border/50 space-y-2">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Download Banner</p>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={downloadWithWatermark}
+              disabled={isDownloading}
+              className="w-full gap-2 rounded-xl border-border/50"
+            >
+              {isDownloading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              Download with Watermark (Free)
+            </Button>
+            
+            {!adWatched ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={watchAd}
+                disabled={watchingAd}
+                className="w-full gap-2 rounded-xl"
+              >
+                {watchingAd ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Watching Ad... (5s)
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4" />
+                    Watch Ad to Download Without Watermark
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={downloadWithoutWatermark}
+                disabled={isDownloading}
+                className="w-full gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/80"
+              >
+                {isDownloading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                Download Without Watermark
+              </Button>
+            )}
+          </div>
 
           {/* Actions */}
           <div className="flex gap-2 pt-1">
