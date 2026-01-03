@@ -16,13 +16,13 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.05,
+      staggerChildren: 0.03,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 12 },
   visible: { opacity: 1, y: 0 },
 };
 
@@ -52,9 +52,9 @@ const Index = () => {
           {/* Error State */}
           {error && (
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center py-12 gap-4 bg-card rounded-lg border border-border"
+              className="flex flex-col items-center justify-center py-12 gap-4 bg-card rounded-2xl border border-border/50 card-glow"
             >
               <div className="flex items-center gap-3 text-destructive">
                 <AlertCircle className="w-5 h-5" />
@@ -67,7 +67,7 @@ const Index = () => {
                 onClick={() => refetch()} 
                 variant="outline"
                 size="sm"
-                className="gap-2"
+                className="gap-2 rounded-xl"
               >
                 <RefreshCw className="w-4 h-4" />
                 Retry
@@ -119,7 +119,7 @@ const Index = () => {
                     ))}
                   </motion.div>
                 ) : (
-                  <div className="text-center py-12 bg-card rounded-lg border border-border">
+                  <div className="text-center py-12 bg-card rounded-2xl border border-border/50 card-glow">
                     <p className="text-muted-foreground">
                       No active events in this region.
                     </p>
@@ -157,11 +157,11 @@ const Index = () => {
         </main>
 
         {/* Footer */}
-        <footer className="border-t py-6 mt-8">
+        <footer className="border-t border-border/50 py-6 mt-8">
           <div className="container text-center">
             <p className="text-xs text-muted-foreground">
               © 2026 FF Events — Credit{" "}
-              <span className="font-medium text-foreground">LEAKS OF FF</span>
+              <span className="font-medium text-primary">LEAKS OF FF</span>
             </p>
           </div>
         </footer>

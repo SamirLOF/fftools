@@ -10,10 +10,10 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
   return (
     <div
       className={cn(
-        "absolute top-2 right-2 z-10 px-2 py-0.5 rounded text-xs font-medium",
-        status === "active" && "bg-success text-success-foreground",
-        status === "upcoming" && "bg-primary text-primary-foreground",
-        status === "ended" && "bg-muted text-muted-foreground"
+        "absolute top-2 right-2 z-10 px-2.5 py-1 rounded-lg text-[11px] font-semibold uppercase tracking-wide backdrop-blur-sm",
+        status === "active" && "bg-success/90 text-success-foreground shadow-lg shadow-success/20",
+        status === "upcoming" && "bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20",
+        status === "ended" && "bg-muted/90 text-muted-foreground"
       )}
     >
       {label}
