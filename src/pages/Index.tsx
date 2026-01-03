@@ -64,7 +64,7 @@ const Index = () => {
         .from("profiles")
         .select("user_id")
         .ilike("username", "samir1")
-        .single();
+        .maybeSingle();
 
       if (profileError || !adminProfile) {
         toast.error("Admin user not found");
@@ -76,8 +76,11 @@ const Index = () => {
       const { data: existingRequest } = await supabase
         .from("friend_requests")
         .select("id, status")
-        .or(`and(from_user_id.eq.${user.id},to_user_id.eq.${adminProfile.user_id}),and(from_user_id.eq.${adminProfile.user_id},to_user_id.eq.${user.id})`)
-        .single();
+        .or(
+          `and(from_user_id.eq.${user.id},to_user_id.eq.${adminProfile.user_id}),and(from_user_id.eq.${adminProfile.user_id},to_user_id.eq.${user.id})`,
+        )
+        .limit(1)
+        .maybeSingle();
 
       if (existingRequest) {
         toast.info("Request already sent or you're already friends!");
