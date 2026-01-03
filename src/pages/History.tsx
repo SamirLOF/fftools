@@ -69,13 +69,13 @@ const History = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background hexagon-grid">
+      <div className="min-h-screen bg-background">
         <Header selectedRegion={selectedRegion} onRegionChange={handleRegionChange} />
 
         <main className="container py-8">
           {/* Back Link */}
           <Link to="/">
-            <Button variant="ghost" size="sm" className="gap-2 mb-4 font-bold hover:text-primary">
+            <Button variant="ghost" size="sm" className="gap-2 mb-4">
               <ChevronLeft className="w-4 h-4" />
               Back
             </Button>
@@ -84,15 +84,14 @@ const History = () => {
           {/* Page Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Globe className="w-4 h-4 text-secondary" />
-                <span className="font-display text-sm tracking-wider text-secondary">
+              <div className="flex items-center gap-2 mb-1">
+                <Globe className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
                   {selectedRegionData?.code} — {selectedRegionData?.name}
                 </span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-display tracking-wider">
-                <span className="purple-text">EVENT</span>{" "}
-                <span className="text-foreground">ARCHIVE</span>
+              <h1 className="text-2xl font-semibold text-foreground">
+                Event Archive
               </h1>
             </div>
 
@@ -104,23 +103,23 @@ const History = () => {
                 placeholder="Search events..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10 h-10 bg-muted/50 border-secondary/30 font-semibold focus:border-secondary/60"
+                className="pl-10 h-9"
               />
             </div>
           </div>
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="mb-6 bg-muted/50 p-1 border border-border/50">
-              <TabsTrigger value="all" className="font-bold px-4 data-[state=active]:bg-secondary/20 data-[state=active]:text-secondary">All</TabsTrigger>
-              <TabsTrigger value="event" className="font-bold px-4 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">Events</TabsTrigger>
-              <TabsTrigger value="update" className="font-bold px-4 data-[state=active]:bg-accent/20 data-[state=active]:text-accent">Announcements</TabsTrigger>
+            <TabsList className="mb-6">
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="event">Events</TabsTrigger>
+              <TabsTrigger value="update">Announcements</TabsTrigger>
             </TabsList>
 
             <TabsContent value={activeTab} className="mt-0">
               {isLoading ? (
                 <div className="flex items-center justify-center py-16">
-                  <Loader2 className="w-10 h-10 animate-spin text-secondary" />
+                  <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                 </div>
               ) : data && data.data.length > 0 ? (
                 <>
@@ -144,13 +143,13 @@ const History = () => {
                         size="sm"
                         onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
-                        className="gap-1 font-bold border-secondary/40 hover:bg-secondary/20"
+                        className="gap-1"
                       >
                         <ChevronLeft className="w-4 h-4" />
                         Prev
                       </Button>
 
-                      <span className="text-sm font-bold text-muted-foreground">
+                      <span className="text-sm text-muted-foreground">
                         {currentPage} / {data.totalPages}
                       </span>
 
@@ -159,7 +158,7 @@ const History = () => {
                         size="sm"
                         onClick={() => setCurrentPage((p) => Math.min(data.totalPages, p + 1))}
                         disabled={currentPage === data.totalPages}
-                        className="gap-1 font-bold border-secondary/40 hover:bg-secondary/20"
+                        className="gap-1"
                       >
                         Next
                         <ChevronRight className="w-4 h-4" />
@@ -167,17 +166,17 @@ const History = () => {
                     </div>
                   )}
 
-                  <p className="text-center text-xs text-muted-foreground mt-4 font-semibold">
+                  <p className="text-center text-xs text-muted-foreground mt-4">
                     {data.total} archived events
                   </p>
                 </>
               ) : (
-                <div className="text-center py-16 cursed-card rounded-xl">
-                  <Archive className="w-14 h-14 mx-auto mb-4 text-secondary/50" />
-                  <h3 className="text-2xl font-display tracking-wider mb-2 text-muted-foreground">
-                    {searchQuery ? "NO RESULTS" : "NO ARCHIVES"}
+                <div className="text-center py-16 bg-card rounded-lg border border-border">
+                  <Archive className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <h3 className="text-lg font-medium mb-1 text-muted-foreground">
+                    {searchQuery ? "No Results" : "No Archives"}
                   </h3>
-                  <p className="text-muted-foreground font-semibold text-sm">
+                  <p className="text-muted-foreground text-sm">
                     {searchQuery
                       ? `No events matching "${searchQuery}"`
                       : `No archived events for ${selectedRegionData?.name}`}
@@ -189,11 +188,11 @@ const History = () => {
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-secondary/20 py-6 mt-10">
+        <footer className="border-t py-6 mt-8">
           <div className="container text-center">
-            <p className="text-xs text-muted-foreground font-semibold">
-              © 2026 FF Events (JJK) — Credit{" "}
-              <span className="purple-text font-bold">LEAKS OF FF</span>
+            <p className="text-xs text-muted-foreground">
+              © 2026 FF Events — Credit{" "}
+              <span className="font-medium text-foreground">LEAKS OF FF</span>
             </p>
           </div>
         </footer>
