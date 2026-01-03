@@ -1,29 +1,31 @@
-import { Calendar, Info, CreditCard, Sparkles, Menu, LogIn, Shield, Bell, BellOff } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Calendar, Info, CreditCard, Sparkles, Menu, Shield, Bell, BellOff, MessageCircle, User, LogOut, Crown, Users } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
-import { useAdmin } from "@/hooks/useAdmin";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useAuth } from "@/contexts/AuthContext";
+import VerifiedBadge from "./VerifiedBadge";
 
 const navItems = [
   { title: "Events", url: "/", icon: Calendar },
   { title: "Explore Tools", url: "/tools", icon: Sparkles },
+  { title: "Chat", url: "/chat", icon: MessageCircle },
   { title: "About", url: "/about", icon: Info },
   { title: "Pricing", url: "/pricing", icon: CreditCard },
-  { title: "Login", url: "/login", icon: LogIn },
 ];
 
 const AppSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const { isAdmin } = useAdmin();
+  const { profile, isAdmin, isPremium, signOut } = useAuth();
   const { isSupported, isEnabled, requestPermission } = useNotifications();
-  const [username, setUsername] = useState<string | null>(null);
 
-  useEffect(() => {
-    setUsername(localStorage.getItem("ff_username"));
-  }, []);
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
 
   return (
     <>
@@ -67,17 +69,44 @@ const AppSidebar = () => {
           </div>
 
           {/* User Info */}
-          {username && (
-            <div className="mb-4 px-2">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/30 border border-border/30">
-                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="text-xs font-medium text-primary uppercase">
-                    {username[0]}
+          {profile && (
+            <NavLink 
+              to="/account"
+              onClick={() => setIsOpen(false)}
+              className={cn(
+                "mb-4 px-2",
+                location.pathname === "/account" && "pointer-events-none"
+              )}
+            >
+              <div className={cn(
+                "flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all",
+                isPremium 
+                  ? "bg-gradient-to-r from-primary/20 to-purple-500/20 border-primary/30" 
+                  : "bg-secondary/30 border-border/30",
+                location.pathname === "/account" && "ring-2 ring-primary"
+              )}>
+                <div className={cn(
+                  "w-8 h-8 rounded-lg flex items-center justify-center",
+                  isPremium ? "bg-primary/30" : "bg-primary/20"
+                )}>
+                  <span className="text-sm font-medium text-primary uppercase">
+                    {profile.username[0]}
                   </span>
                 </div>
-                <span className="text-sm font-medium text-foreground truncate">{username}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-medium text-foreground truncate">{profile.username}</span>
+                    {isPremium && <VerifiedBadge size="sm" />}
+                  </div>
+                  {isPremium && (
+                    <div className="flex items-center gap-1">
+                      <Crown className="w-3 h-3 text-primary" />
+                      <span className="text-[10px] text-primary">Premium</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </NavLink>
           )}
 
           {/* Navigation */}
@@ -104,19 +133,34 @@ const AppSidebar = () => {
             
             {/* Admin Link - Only visible to admins */}
             {isAdmin && (
-              <NavLink
-                to="/admin"
-                onClick={() => setIsOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-                  location.pathname === "/admin"
-                    ? "bg-primary/15 text-primary shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                )}
-              >
-                <Shield className="w-4 h-4" />
-                Admin
-              </NavLink>
+              <>
+                <NavLink
+                  to="/admin"
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                    location.pathname === "/admin"
+                      ? "bg-primary/15 text-primary shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  )}
+                >
+                  <Shield className="w-4 h-4" />
+                  Admin
+                </NavLink>
+                <NavLink
+                  to="/admin/users"
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                    location.pathname === "/admin/users"
+                      ? "bg-primary/15 text-primary shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  )}
+                >
+                  <Users className="w-4 h-4" />
+                  Manage Users
+                </NavLink>
+              </>
             )}
           </nav>
 
@@ -140,6 +184,21 @@ const AppSidebar = () => {
                     <span className="text-xs">Enable Notifications</span>
                   </>
                 )}
+              </Button>
+            </div>
+          )}
+
+          {/* Sign Out */}
+          {profile && (
+            <div className="mb-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="w-full rounded-xl gap-2 justify-start text-muted-foreground hover:text-destructive"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="text-xs">Sign Out</span>
               </Button>
             </div>
           )}

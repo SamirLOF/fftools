@@ -17,7 +17,7 @@ import {
   Loader2,
   X
 } from "lucide-react";
-import { useAdmin } from "@/hooks/useAdmin";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -43,7 +43,8 @@ interface AdminUser {
 }
 
 const Admin = () => {
-  const { isAdmin, isLoading, username } = useAdmin();
+  const { isAdmin, isLoading, profile } = useAuth();
+  const username = profile?.username;
   const navigate = useNavigate();
   
   const [events, setEvents] = useState<CustomEvent[]>([]);
@@ -68,7 +69,7 @@ const Admin = () => {
 
   useEffect(() => {
     if (!isLoading && !isAdmin) {
-      navigate("/login");
+      navigate("/auth");
     }
   }, [isLoading, isAdmin, navigate]);
 
@@ -215,7 +216,7 @@ const Admin = () => {
             <AlertTriangle className="w-16 h-16 text-destructive mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-foreground mb-2">Access Denied</h1>
             <p className="text-muted-foreground mb-4">You don't have admin privileges.</p>
-            <Button onClick={() => navigate("/login")}>Go to Login</Button>
+            <Button onClick={() => navigate("/auth")}>Go to Login</Button>
           </div>
         </div>
       </PageTransition>

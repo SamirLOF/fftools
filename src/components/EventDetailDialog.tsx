@@ -5,11 +5,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Copy, Check, CalendarClock, CalendarCheck, Download, Play, Loader2 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { ExternalLink, Copy, Check, CalendarClock, CalendarCheck, Download, Play, Loader2, Crown, Lock } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import StatusBadge from "./StatusBadge";
 import { getEventStatus } from "@/services/eventApi";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 declare global {
   interface Window {
@@ -44,8 +46,24 @@ const EventDetailDialog = ({
   const [adWatched, setAdWatched] = useState(false);
   const [adCountdown, setAdCountdown] = useState(0);
   const status = getEventStatus(startDate, endDate);
+  const { isPremium } = useAuth();
+  const navigate = useNavigate();
 
   const copyBannerLink = async () => {
+    if (!isPremium) {
+      toast.error("Premium feature", {
+        description: "Upgrade to Premium to copy banner links!",
+        action: {
+          label: "Upgrade",
+          onClick: () => {
+            onOpenChange(false);
+            navigate("/pricing");
+          }
+        }
+      });
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(image);
       setCopied(true);
@@ -59,7 +77,6 @@ const EventDetailDialog = ({
   const downloadWithWatermark = async () => {
     setIsDownloading(true);
     try {
-      // Create canvas with watermark
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.src = image;
@@ -74,16 +91,13 @@ const EventDetailDialog = ({
       canvas.height = img.height;
       const ctx = canvas.getContext("2d")!;
       
-      // Draw image
       ctx.drawImage(img, 0, 0);
       
-      // Add watermark
       ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
       ctx.font = `bold ${Math.max(img.width / 15, 24)}px Arial`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       
-      // Add shadow for better visibility
       ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
       ctx.shadowBlur = 4;
       ctx.shadowOffsetX = 2;
@@ -91,11 +105,10 @@ const EventDetailDialog = ({
       
       ctx.fillText("LEAKS OF FF", canvas.width / 2, canvas.height / 2);
       
-      // Download
-      const link = document.createElement("a");
-      link.download = `${title || "banner"}_leaksofff.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `${title || "banner"}_leaksofff.png`;
+      downloadLink.href = canvas.toDataURL("image/png");
+      downloadLink.click();
       
       toast.success("Banner downloaded with watermark!");
     } catch (error) {
@@ -111,10 +124,10 @@ const EventDetailDialog = ({
       const response = await fetch(image);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.download = `${title || "banner"}.png`;
-      link.href = url;
-      link.click();
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `${title || "banner"}.png`;
+      downloadLink.href = url;
+      downloadLink.click();
       URL.revokeObjectURL(url);
       toast.success("Banner downloaded!");
     } catch (error) {
@@ -129,7 +142,6 @@ const EventDetailDialog = ({
     setAdCountdown(7);
     toast.info("Please wait while watching ad...");
     
-    // Push ad after a short delay to ensure DOM is ready
     setTimeout(() => {
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -138,7 +150,6 @@ const EventDetailDialog = ({
       }
     }, 100);
     
-    // Countdown timer (7 seconds)
     const interval = setInterval(() => {
       setAdCountdown((prev) => {
         if (prev <= 1) {
@@ -241,7 +252,6 @@ const EventDetailDialog = ({
                     Watching Ad...
                   </div>
                   
-                  {/* Google AdSense Ad Unit */}
                   <div className="w-full min-h-[100px] bg-secondary/50 rounded-lg flex items-center justify-center overflow-hidden">
                     <ins
                       className="adsbygoogle"
@@ -296,10 +306,19 @@ const EventDetailDialog = ({
               variant="outline"
               size="sm"
               onClick={copyBannerLink}
-              className="gap-1.5 flex-1 rounded-xl border-border/50"
+              className={`gap-1.5 flex-1 rounded-xl border-border/50 ${!isPremium ? "opacity-70" : ""}`}
             >
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copied ? "Copied" : "Copy Banner"}
+              {isPremium ? (
+                copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />
+              ) : (
+                <Lock className="w-4 h-4" />
+              )}
+              {copied ? "Copied" : isPremium ? "Copy Banner" : (
+                <span className="flex items-center gap-1">
+                  Copy Banner
+                  <Crown className="w-3 h-3 text-primary" />
+                </span>
+              )}
             </Button>
 
             {link && (
