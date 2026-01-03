@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import AppSidebar from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
@@ -9,10 +11,12 @@ import {
   Bell, 
   Share2, 
   Download,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from "lucide-react";
 import { toast } from "sonner";
-
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 const tools = [
   {
     icon: Copy,
@@ -78,6 +82,73 @@ const comingSoonTools = [
 ];
 
 const Tools = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isSendingRequest, setIsSendingRequest] = useState(false);
+
+  const handleSubmitRequest = async () => {
+    if (!user) {
+      toast.error("Please login to submit a request");
+      return;
+    }
+
+    setIsSendingRequest(true);
+
+    try {
+      // Find samiradmin user
+      const { data: adminProfile, error: profileError } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("username", "samiradmin")
+        .single();
+
+      if (profileError || !adminProfile) {
+        toast.error("Could not find admin user");
+        setIsSendingRequest(false);
+        return;
+      }
+
+      // Check if friend request already exists
+      const { data: existingRequest } = await supabase
+        .from("friend_requests")
+        .select("id, status")
+        .or(`and(from_user_id.eq.${user.id},to_user_id.eq.${adminProfile.user_id}),and(from_user_id.eq.${adminProfile.user_id},to_user_id.eq.${user.id})`)
+        .maybeSingle();
+
+      if (existingRequest) {
+        if (existingRequest.status === "accepted") {
+          toast.info("You're already connected with admin!");
+          navigate("/chat");
+        } else {
+          toast.info("Friend request already sent!");
+        }
+        setIsSendingRequest(false);
+        return;
+      }
+
+      // Send friend request
+      const { error: requestError } = await supabase
+        .from("friend_requests")
+        .insert({
+          from_user_id: user.id,
+          to_user_id: adminProfile.user_id,
+        });
+
+      if (requestError) {
+        toast.error("Failed to send request");
+        setIsSendingRequest(false);
+        return;
+      }
+
+      toast.success("Request sent to admin!");
+      navigate("/chat");
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setIsSendingRequest(false);
+    }
+  };
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background flex">
@@ -193,8 +264,19 @@ const Tools = () => {
               <p className="text-muted-foreground mb-4">
                 We're always looking to improve. Let us know what tools you'd like to see!
               </p>
-              <Button className="rounded-xl" onClick={() => toast.success("Feature request submitted!")}>
-                Submit Request
+              <Button 
+                className="rounded-xl" 
+                onClick={handleSubmitRequest}
+                disabled={isSendingRequest}
+              >
+                {isSendingRequest ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Submit Request"
+                )}
               </Button>
             </motion.div>
 

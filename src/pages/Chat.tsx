@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import AdminBadge from "@/components/AdminBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
@@ -347,7 +348,11 @@ const Chat = () => {
                                 <div className="flex-1 text-left">
                                   <div className="flex items-center gap-1">
                                     <span className="font-medium">{friend.username}</span>
-                                    {friend.is_premium && <VerifiedBadge size="sm" />}
+                                    {friend.username === "samiradmin" ? (
+                                      <AdminBadge size="sm" isPremium={true} />
+                                    ) : friend.is_premium ? (
+                                      <VerifiedBadge size="sm" />
+                                    ) : null}
                                   </div>
                                 </div>
                               </button>
@@ -389,7 +394,11 @@ const Chat = () => {
                                   <div className="flex-1">
                                     <div className="flex items-center gap-1">
                                       <span className="font-medium">{result.username}</span>
-                                      {result.is_premium && <VerifiedBadge size="sm" />}
+                                      {result.username === "samiradmin" ? (
+                                        <AdminBadge size="sm" isPremium={true} />
+                                      ) : result.is_premium ? (
+                                        <VerifiedBadge size="sm" />
+                                      ) : null}
                                     </div>
                                   </div>
                                   {hasSentRequest ? (
@@ -441,7 +450,11 @@ const Chat = () => {
                                 <div className="flex-1">
                                   <div className="flex items-center gap-1">
                                     <span className="font-medium">{request.from_profile?.username}</span>
-                                    {request.from_profile?.is_premium && <VerifiedBadge size="sm" />}
+                                    {request.from_profile?.username === "samiradmin" ? (
+                                      <AdminBadge size="sm" isPremium={true} />
+                                    ) : request.from_profile?.is_premium ? (
+                                      <VerifiedBadge size="sm" />
+                                    ) : null}
                                   </div>
                                   <p className="text-xs text-muted-foreground">
                                     <Clock className="w-3 h-3 inline mr-1" />
