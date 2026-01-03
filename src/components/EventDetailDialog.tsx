@@ -36,6 +36,7 @@ const EventDetailDialog = ({
   const [isDownloading, setIsDownloading] = useState(false);
   const [watchingAd, setWatchingAd] = useState(false);
   const [adWatched, setAdWatched] = useState(false);
+  const [adCountdown, setAdCountdown] = useState(0);
   const status = getEventStatus(startDate, endDate);
 
   const copyBannerLink = async () => {
@@ -119,14 +120,22 @@ const EventDetailDialog = ({
 
   const watchAd = () => {
     setWatchingAd(true);
+    setAdCountdown(7);
     toast.info("Please wait while watching ad...");
     
-    // Simulate ad watch (5 seconds)
-    setTimeout(() => {
-      setWatchingAd(false);
-      setAdWatched(true);
-      toast.success("Ad completed! You can now download without watermark.");
-    }, 5000);
+    // Countdown timer (7 seconds)
+    const interval = setInterval(() => {
+      setAdCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setWatchingAd(false);
+          setAdWatched(true);
+          toast.success("Ad completed! You can now download without watermark.");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
   return (
@@ -210,25 +219,32 @@ const EventDetailDialog = ({
             </Button>
             
             {!adWatched ? (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={watchAd}
-                disabled={watchingAd}
-                className="w-full gap-2 rounded-xl"
-              >
-                {watchingAd ? (
-                  <>
+              watchingAd ? (
+                <div className="p-4 rounded-xl bg-primary/10 border border-primary/30 text-center space-y-3">
+                  <div className="flex items-center justify-center gap-2 text-primary font-medium">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Watching Ad... (5s)
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4" />
-                    Watch Ad to Download Without Watermark
-                  </>
-                )}
-              </Button>
+                    Watching Ad...
+                  </div>
+                  <div className="relative w-full h-2 bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-1000 ease-linear"
+                      style={{ width: `${((7 - adCountdown) / 7) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-2xl font-bold text-primary">{adCountdown}s</p>
+                  <p className="text-xs text-muted-foreground">Please wait for the ad to complete</p>
+                </div>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={watchAd}
+                  className="w-full gap-2 rounded-xl"
+                >
+                  <Play className="w-4 h-4" />
+                  Watch Ad to Download Without Watermark
+                </Button>
+              )
             ) : (
               <Button
                 size="sm"
