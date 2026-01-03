@@ -197,7 +197,10 @@ const About = () => {
               className="text-center mt-16 pt-8 border-t border-border/50"
             >
               <p className="text-sm text-muted-foreground">
-                Developed with ❤️ by <span className="text-primary font-medium">LEAKS OF FF</span>
+                <span className="text-primary font-medium">@LEAKS OF FF</span>
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                © {new Date().getFullYear()} LEAKS OF FF. All rights reserved.
               </p>
             </motion.div>
           </div>

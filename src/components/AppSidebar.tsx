@@ -207,7 +207,10 @@ const AppSidebar = () => {
           {/* Footer */}
           <div className="pt-4 border-t border-border/50">
             <p className="text-[10px] text-muted-foreground text-center">
-              Credit <span className="text-primary font-medium">LEAKS OF FF</span>
+              <span className="text-primary font-medium">@LEAKS OF FF</span>
+            </p>
+            <p className="text-[9px] text-muted-foreground text-center mt-1">
+              © {new Date().getFullYear()} All rights reserved.
             </p>
           </div>
         </div>
