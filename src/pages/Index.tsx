@@ -1,6 +1,5 @@
 import { useMemo } from "react";
-import { AlertCircle, RefreshCw, Archive } from "lucide-react";
-import { Link } from "react-router-dom";
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
@@ -153,23 +152,6 @@ const Index = () => {
                   </motion.div>
                 </section>
               )}
-
-              {/* Archive Link */}
-              <section className="text-center py-8 bg-card rounded-lg border border-border">
-                <Archive className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-1">
-                  Event Archive
-                </h3>
-                <p className="text-muted-foreground mb-4 text-sm">
-                  View expired events
-                </p>
-                <Link to="/history">
-                  <Button className="gap-2">
-                    <Archive className="w-4 h-4" />
-                    View Archive
-                  </Button>
-                </Link>
-              </section>
             </>
           )}
         </main>
