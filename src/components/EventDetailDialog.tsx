@@ -48,9 +48,9 @@ const EventDetailDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden [&>button]:hidden">
+      <DialogContent className="max-w-lg p-0 overflow-hidden rounded-2xl border-border/50 bg-card [&>button]:hidden">
         {/* Banner Image */}
-        <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        <div className="relative aspect-[16/10] overflow-hidden bg-muted/50">
           <img
             src={image}
             alt={title}
@@ -60,13 +60,14 @@ const EventDetailDialog = ({
                 "https://via.placeholder.com/700x400?text=Event";
             }}
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
           <div className="absolute top-3 left-3">
             <StatusBadge status={status} />
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-4 -mt-8 relative">
           <DialogHeader className="p-0 space-y-0">
             <DialogTitle className="text-xl font-semibold text-foreground leading-tight">
               {title || "Untitled Event"}
@@ -75,17 +76,21 @@ const EventDetailDialog = ({
 
           {/* Dates */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-2.5 p-3 rounded-lg bg-muted/50 border border-border">
-              <CalendarClock className="w-4 h-4 text-primary shrink-0" />
+            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-secondary/50 border border-border/50">
+              <div className="p-1.5 rounded-lg bg-primary/20">
+                <CalendarClock className="w-4 h-4 text-primary" />
+              </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Start Date</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Start</p>
                 <p className="text-sm font-medium text-foreground">{startDate}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 p-3 rounded-lg bg-muted/50 border border-border">
-              <CalendarCheck className="w-4 h-4 text-primary shrink-0" />
+            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-secondary/50 border border-border/50">
+              <div className="p-1.5 rounded-lg bg-primary/20">
+                <CalendarCheck className="w-4 h-4 text-primary" />
+              </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">End Date</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">End</p>
                 <p className="text-sm font-medium text-foreground">{endDate}</p>
               </div>
             </div>
@@ -93,7 +98,7 @@ const EventDetailDialog = ({
 
           {/* Details */}
           {details && (
-            <div className="p-3 rounded-lg bg-muted/30 border border-border">
+            <div className="p-3 rounded-xl bg-secondary/30 border border-border/50">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Details</p>
               <p className="text-sm text-foreground/90 leading-relaxed">{details}</p>
             </div>
@@ -105,7 +110,7 @@ const EventDetailDialog = ({
               variant="outline"
               size="sm"
               onClick={copyBannerLink}
-              className="gap-1.5 flex-1"
+              className="gap-1.5 flex-1 rounded-xl border-border/50"
             >
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? "Copied" : "Copy Banner"}
@@ -115,7 +120,7 @@ const EventDetailDialog = ({
               <Button
                 size="sm"
                 onClick={() => window.open(link, "_blank")}
-                className="gap-1.5 flex-1"
+                className="gap-1.5 flex-1 rounded-xl"
               >
                 <ExternalLink className="w-4 h-4" />
                 Open Link

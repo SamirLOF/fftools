@@ -22,21 +22,24 @@ const EventCard = ({ title, image, startDate, endDate, details, link }: EventCar
     <>
       <div
         onClick={() => setDialogOpen(true)}
-        className="group relative overflow-hidden rounded-lg bg-card border border-border card-shadow transition-all duration-200 hover:card-shadow-hover hover:border-primary/30 cursor-pointer"
+        className="group relative overflow-hidden rounded-xl bg-card border border-border/50 card-glow smooth-transition hover:card-glow-hover hover:border-primary/40 cursor-pointer will-change-transform"
       >
         <StatusBadge status={status} />
         
         {/* Image Container */}
-        <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        <div className="relative aspect-[16/10] overflow-hidden bg-muted/50">
           <img
             src={image}
             alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
             loading="lazy"
+            decoding="async"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "https://via.placeholder.com/700x400?text=Event";
             }}
           />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
 
         {/* Content */}
