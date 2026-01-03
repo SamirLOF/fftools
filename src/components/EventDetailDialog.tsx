@@ -5,13 +5,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Copy, Check, CalendarClock, CalendarCheck, Download, Play, Loader2, Crown, Lock } from "lucide-react";
-import { useState } from "react";
+import { ExternalLink, Copy, Check, CalendarClock, CalendarCheck, Download, Play, Loader2, Crown, Lock, Timer } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import StatusBadge from "./StatusBadge";
 import { getEventStatus } from "@/services/eventApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { parse, differenceInSeconds, isAfter, isValid } from "date-fns";
 
 declare global {
   interface Window {
@@ -45,9 +46,64 @@ const EventDetailDialog = ({
   const [watchingAd, setWatchingAd] = useState(false);
   const [adWatched, setAdWatched] = useState(false);
   const [adCountdown, setAdCountdown] = useState(0);
+  const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
   const status = getEventStatus(startDate, endDate);
   const { isPremium } = useAuth();
   const navigate = useNavigate();
+
+  // Parse date string like "Jan 03" to a Date object for the current year
+  const parseEventDate = (dateStr: string): Date | null => {
+    try {
+      // Try parsing "MMM dd" format
+      const currentYear = new Date().getFullYear();
+      const parsed = parse(`${dateStr} ${currentYear}`, "MMM dd yyyy", new Date());
+      if (isValid(parsed)) return parsed;
+      
+      // Try parsing "dd MMM" format
+      const parsed2 = parse(`${dateStr} ${currentYear}`, "dd MMM yyyy", new Date());
+      if (isValid(parsed2)) return parsed2;
+      
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Countdown timer for upcoming events (Premium only)
+  useEffect(() => {
+    if (!isPremium || status !== "upcoming") {
+      setCountdown(null);
+      return;
+    }
+
+    const startDateObj = parseEventDate(startDate);
+    if (!startDateObj || !isAfter(startDateObj, new Date())) {
+      setCountdown(null);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const diff = differenceInSeconds(startDateObj, now);
+      
+      if (diff <= 0) {
+        setCountdown(null);
+        return;
+      }
+
+      const days = Math.floor(diff / (24 * 60 * 60));
+      const hours = Math.floor((diff % (24 * 60 * 60)) / (60 * 60));
+      const minutes = Math.floor((diff % (60 * 60)) / 60);
+      const seconds = diff % 60;
+
+      setCountdown({ days, hours, minutes, seconds });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [isPremium, status, startDate]);
 
   const copyBannerLink = async () => {
     if (!isPremium) {
@@ -216,6 +272,35 @@ const EventDetailDialog = ({
               </div>
             </div>
           </div>
+
+          {/* Countdown Timer - Premium Only */}
+          {isPremium && countdown && status === "upcoming" && (
+            <div className="p-4 rounded-xl bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30">
+              <div className="flex items-center gap-2 mb-3">
+                <Timer className="w-4 h-4 text-primary" />
+                <p className="text-[10px] uppercase tracking-wider text-primary font-medium">Event Starts In</p>
+                <Crown className="w-3 h-3 text-primary ml-auto" />
+              </div>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                <div className="bg-background/50 rounded-lg p-2">
+                  <p className="text-xl font-bold text-foreground">{countdown.days}</p>
+                  <p className="text-[10px] text-muted-foreground">Days</p>
+                </div>
+                <div className="bg-background/50 rounded-lg p-2">
+                  <p className="text-xl font-bold text-foreground">{countdown.hours}</p>
+                  <p className="text-[10px] text-muted-foreground">Hours</p>
+                </div>
+                <div className="bg-background/50 rounded-lg p-2">
+                  <p className="text-xl font-bold text-foreground">{countdown.minutes}</p>
+                  <p className="text-[10px] text-muted-foreground">Min</p>
+                </div>
+                <div className="bg-background/50 rounded-lg p-2">
+                  <p className="text-xl font-bold text-primary animate-pulse">{countdown.seconds}</p>
+                  <p className="text-[10px] text-muted-foreground">Sec</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Details */}
           {details && (
