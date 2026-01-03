@@ -24,7 +24,7 @@ const AnimatedRoutes = () => {
   const location = useLocation();
   
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="popLayout" initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/auth" element={<Auth />} />
         <Route path="/" element={
