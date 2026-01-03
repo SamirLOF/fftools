@@ -17,7 +17,7 @@ import { format, differenceInDays, addDays } from "date-fns";
 import confetti from "canvas-confetti";
 
 const Account = () => {
-  const { profile, isPremium, signOut, refreshProfile } = useAuth();
+  const { profile, isPremium, signOut, refreshProfile, user } = useAuth();
   const navigate = useNavigate();
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState(profile?.username || "");
@@ -99,6 +99,11 @@ const Account = () => {
       return;
     }
 
+    if (!user?.id) {
+      toast.error("Please log in to redeem a promo code");
+      return;
+    }
+
     setIsRedeemingPromo(true);
 
     try {
@@ -106,7 +111,7 @@ const Account = () => {
       const { data: existingRedemption } = await supabase
         .from("promo_redemptions")
         .select("id")
-        .eq("user_id", profile?.user_id)
+        .eq("user_id", user.id)
         .eq("promo_code", promoCode.toUpperCase())
         .maybeSingle();
 
@@ -119,22 +124,36 @@ const Account = () => {
       // Validate promo code
       if (promoCode.toUpperCase() === "LOF26") {
         // Add promo redemption
-        await supabase
+        const { error: redemptionError } = await supabase
           .from("promo_redemptions")
-          .insert({ user_id: profile?.user_id, promo_code: "LOF26" });
+          .insert({ user_id: user.id, promo_code: "LOF26" });
+
+        if (redemptionError) {
+          console.error("Redemption error:", redemptionError);
+          toast.error("Failed to record redemption");
+          setIsRedeemingPromo(false);
+          return;
+        }
 
         // Calculate new expiry date
         const currentExpiry = profile?.premium_expires_at ? new Date(profile.premium_expires_at) : new Date();
         const newExpiry = addDays(currentExpiry > new Date() ? currentExpiry : new Date(), 14);
 
         // Update profile to premium
-        await supabase
+        const { error: updateError } = await supabase
           .from("profiles")
           .update({ 
             is_premium: true,
             premium_expires_at: newExpiry.toISOString()
           })
-          .eq("user_id", profile?.user_id);
+          .eq("user_id", user.id);
+
+        if (updateError) {
+          console.error("Profile update error:", updateError);
+          toast.error("Failed to activate premium");
+          setIsRedeemingPromo(false);
+          return;
+        }
 
         // Trigger confetti
         confetti({

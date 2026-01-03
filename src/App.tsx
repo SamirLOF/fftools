@@ -15,6 +15,7 @@ import Account from "./pages/Account";
 import Chat from "./pages/Chat";
 import Admin from "./pages/Admin";
 import AdminUsers from "./pages/AdminUsers";
+import PremiumBenefits from "./pages/PremiumBenefits";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,11 @@ const AnimatedRoutes = () => {
         <Route path="/chat" element={
           <ProtectedRoute>
             <Chat />
+          </ProtectedRoute>
+        } />
+        <Route path="/premium" element={
+          <ProtectedRoute>
+            <PremiumBenefits />
           </ProtectedRoute>
         } />
         <Route path="/admin" element={

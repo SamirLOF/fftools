@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   MessageCircle, Search, Send, UserPlus, Users, Check, X, 
-  Loader2, User, Clock 
+  Loader2, User, Clock, CheckCheck
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -49,6 +49,7 @@ const Chat = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [friends, setFriends] = useState<Profile[]>([]);
   const [pendingRequests, setPendingRequests] = useState<FriendRequest[]>([]);
+  const [sentRequests, setSentRequests] = useState<string[]>([]);
   const [selectedChat, setSelectedChat] = useState<Profile | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -59,6 +60,7 @@ const Chat = () => {
     if (user) {
       loadFriends();
       loadPendingRequests();
+      loadSentRequests();
     }
   }, [user]);
 
@@ -159,6 +161,20 @@ const Chat = () => {
     }
   };
 
+  const loadSentRequests = async () => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("friend_requests")
+      .select("to_user_id")
+      .eq("from_user_id", user.id)
+      .in("status", ["pending", "accepted"]);
+
+    if (data) {
+      setSentRequests(data.map(req => req.to_user_id));
+    }
+  };
+
   const loadMessages = async () => {
     if (!user || !selectedChat) return;
 
@@ -218,7 +234,7 @@ const Chat = () => {
       }
     } else {
       toast.success("Friend request sent!");
-      setSearchResults(prev => prev.filter(p => p.user_id !== toUserId));
+      setSentRequests(prev => [...prev, toUserId]);
     }
   };
 
@@ -360,31 +376,41 @@ const Chat = () => {
                       <ScrollArea className="h-[calc(100%-60px)]">
                         {searchResults.length > 0 ? (
                           <div className="space-y-2">
-                            {searchResults.map((result) => (
-                              <div
-                                key={result.user_id}
-                                className="p-3 rounded-xl bg-secondary/50 flex items-center gap-3"
-                              >
-                                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary font-semibold">
-                                  {result.username.charAt(0).toUpperCase()}
-                                </div>
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-1">
-                                    <span className="font-medium">{result.username}</span>
-                                    {result.is_premium && <VerifiedBadge size="sm" />}
-                                  </div>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => sendFriendRequest(result.user_id)}
-                                  className="gap-1"
+                            {searchResults.map((result) => {
+                              const hasSentRequest = sentRequests.includes(result.user_id);
+                              return (
+                                <div
+                                  key={result.user_id}
+                                  className="p-3 rounded-xl bg-secondary/50 flex items-center gap-3"
                                 >
-                                  <UserPlus className="w-4 h-4" />
-                                  Add
-                                </Button>
-                              </div>
-                            ))}
+                                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary font-semibold">
+                                    {result.username.charAt(0).toUpperCase()}
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-1">
+                                      <span className="font-medium">{result.username}</span>
+                                      {result.is_premium && <VerifiedBadge size="sm" />}
+                                    </div>
+                                  </div>
+                                  {hasSentRequest ? (
+                                    <div className="flex items-center gap-1 text-success text-sm px-3 py-1.5 rounded-md bg-success/10">
+                                      <CheckCheck className="w-4 h-4" />
+                                      <span>Sent</span>
+                                    </div>
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => sendFriendRequest(result.user_id)}
+                                      className="gap-1"
+                                    >
+                                      <UserPlus className="w-4 h-4" />
+                                      Add
+                                    </Button>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="text-center py-8 text-muted-foreground">
@@ -487,9 +513,14 @@ const Chat = () => {
                                   }`}
                                 >
                                   <p className="text-sm">{message.content}</p>
-                                  <p className={`text-xs mt-1 ${isOwn ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                                    {format(new Date(message.created_at), "HH:mm")}
-                                  </p>
+                                  <div className={`flex items-center gap-1 mt-1 ${isOwn ? "justify-end" : ""}`}>
+                                    <p className={`text-xs ${isOwn ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                                      {format(new Date(message.created_at), "HH:mm")}
+                                    </p>
+                                    {isOwn && (
+                                      <CheckCheck className="w-3.5 h-3.5 text-success" />
+                                    )}
+                                  </div>
                                 </div>
                               </motion.div>
                             );
