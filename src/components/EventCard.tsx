@@ -79,7 +79,7 @@ const EventCard = ({ title, image, startDate, endDate, details, link }: EventCar
     <>
       <div
         onClick={() => setDialogOpen(true)}
-        className="group relative overflow-hidden rounded-xl bg-card border border-border/50 card-glow smooth-transition hover:card-glow-hover hover:border-primary/40 cursor-pointer will-change-transform"
+        className="group relative overflow-hidden rounded-xl bg-card border border-border/50 card-glow hover:border-primary/40 cursor-pointer transform-gpu"
       >
         <StatusBadge status={status} />
         
@@ -88,15 +88,13 @@ const EventCard = ({ title, image, startDate, endDate, details, link }: EventCar
           <img
             src={image}
             alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+            className="w-full h-full object-cover"
             loading="lazy"
             decoding="async"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "https://via.placeholder.com/700x400?text=Event";
             }}
           />
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
           {/* Premium Countdown on Card */}
           {isPremium && countdown && status === "upcoming" && (
