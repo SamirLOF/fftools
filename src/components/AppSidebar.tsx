@@ -1,4 +1,4 @@
-import { Calendar, Info, CreditCard, Sparkles, Menu } from "lucide-react";
+import { Calendar, Info, CreditCard, Sparkles, Menu, LogIn } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -9,6 +9,7 @@ const navItems = [
   { title: "Explore Tools", url: "/tools", icon: Sparkles },
   { title: "About", url: "/about", icon: Info },
   { title: "Pricing", url: "/pricing", icon: CreditCard },
+  { title: "Login", url: "/login", icon: LogIn },
 ];
 
 const AppSidebar = () => {

@@ -2,8 +2,11 @@ import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import AppSidebar from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { Check, Star, Zap, Crown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Check, Star, Zap, Crown, MessageCircle, Gift, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const plans = [
   {
@@ -23,7 +26,7 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "$4.99",
+    price: "$1.99",
     period: "per month",
     description: "For dedicated players",
     icon: Zap,
@@ -39,7 +42,7 @@ const plans = [
   },
   {
     name: "Ultimate",
-    price: "$9.99",
+    price: "$4.99",
     period: "per month",
     description: "For content creators",
     icon: Crown,
@@ -56,6 +59,20 @@ const plans = [
 ];
 
 const Pricing = () => {
+  const [promoCode, setPromoCode] = useState("");
+
+  const handleApplyPromo = () => {
+    if (!promoCode.trim()) {
+      toast.error("Please enter a promo code");
+      return;
+    }
+    toast.info("Promo code will be applied at checkout");
+  };
+
+  const handleContactPayment = () => {
+    window.open("https://t.me/samirrahman96", "_blank");
+  };
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background flex">
@@ -78,7 +95,7 @@ const Pricing = () => {
             </motion.div>
 
             {/* Pricing Cards */}
-            <div className="grid md:grid-cols-3 gap-6 mb-16">
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
               {plans.map((plan, index) => (
                 <motion.div
                   key={plan.name}
@@ -141,12 +158,63 @@ const Pricing = () => {
                         ? "bg-primary hover:bg-primary/90"
                         : "bg-secondary hover:bg-secondary/80 text-foreground"
                     )}
+                    onClick={plan.price === "$0" ? undefined : handleContactPayment}
                   >
                     {plan.price === "$0" ? "Get Started" : "Upgrade Now"}
                   </Button>
                 </motion.div>
               ))}
             </div>
+
+            {/* Promo Code & Contact */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="grid md:grid-cols-2 gap-6 mb-8"
+            >
+              {/* Promo Code */}
+              <div className="bg-card rounded-2xl border border-border/50 p-6 card-glow">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-xl bg-primary/10">
+                    <Gift className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-foreground">Have a Promo Code?</h3>
+                </div>
+                <div className="flex gap-3">
+                  <Input
+                    placeholder="Enter promo code"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    className="flex-1 h-11 rounded-xl bg-secondary/50 border-border/50"
+                  />
+                  <Button onClick={handleApplyPromo} className="rounded-xl h-11 px-5">
+                    Apply
+                  </Button>
+                </div>
+              </div>
+
+              {/* Contact for Payment */}
+              <div className="bg-card rounded-2xl border border-border/50 p-6 card-glow">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-xl bg-primary/10">
+                    <MessageCircle className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-foreground">Payment Contact</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  For payment and subscription inquiries, contact us on Telegram.
+                </p>
+                <Button
+                  onClick={handleContactPayment}
+                  className="w-full rounded-xl h-11 gap-2"
+                  variant="secondary"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Contact on Telegram
+                </Button>
+              </div>
+            </motion.div>
 
             {/* FAQ */}
             <motion.div
@@ -169,7 +237,7 @@ const Pricing = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-foreground mb-2">What payment methods do you accept?</h3>
-                  <p className="text-sm text-muted-foreground">We accept all major credit cards, PayPal, and regional payment methods.</p>
+                  <p className="text-sm text-muted-foreground">Contact us on Telegram for payment options including UPI, PayPal, and more.</p>
                 </div>
                 <div>
                   <h3 className="font-medium text-foreground mb-2">Do you offer student discounts?</h3>
