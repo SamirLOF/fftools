@@ -94,12 +94,17 @@ const Account = () => {
   };
 
   const handleRedeemPromo = async () => {
-    if (!promoCode.trim()) {
+    const code = promoCode.trim().toUpperCase();
+    
+    if (!code) {
       toast.error("Please enter a promo code");
       return;
     }
 
-    if (!user?.id) {
+    // Get current user from auth
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    
+    if (!currentUser?.id) {
       toast.error("Please log in to redeem a promo code");
       return;
     }
@@ -107,13 +112,24 @@ const Account = () => {
     setIsRedeemingPromo(true);
 
     try {
+      // Validate promo code first
+      if (code !== "LOF26") {
+        toast.error("Invalid promo code");
+        setIsRedeemingPromo(false);
+        return;
+      }
+
       // Check if already redeemed
-      const { data: existingRedemption } = await supabase
+      const { data: existingRedemption, error: checkError } = await supabase
         .from("promo_redemptions")
         .select("id")
-        .eq("user_id", user.id)
-        .eq("promo_code", promoCode.toUpperCase())
+        .eq("user_id", currentUser.id)
+        .eq("promo_code", code)
         .maybeSingle();
+
+      if (checkError) {
+        console.error("Check error:", checkError);
+      }
 
       if (existingRedemption) {
         toast.error("You've already redeemed this promo code");
@@ -121,60 +137,53 @@ const Account = () => {
         return;
       }
 
-      // Validate promo code
-      if (promoCode.toUpperCase() === "LOF26") {
-        // Add promo redemption
-        const { error: redemptionError } = await supabase
-          .from("promo_redemptions")
-          .insert({ user_id: user.id, promo_code: "LOF26" });
+      // Calculate new expiry date
+      const currentExpiry = profile?.premium_expires_at ? new Date(profile.premium_expires_at) : new Date();
+      const newExpiry = addDays(currentExpiry > new Date() ? currentExpiry : new Date(), 14);
 
-        if (redemptionError) {
-          console.error("Redemption error:", redemptionError);
-          toast.error("Failed to record redemption");
-          setIsRedeemingPromo(false);
-          return;
-        }
+      // Update profile to premium first
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ 
+          is_premium: true,
+          premium_expires_at: newExpiry.toISOString()
+        })
+        .eq("user_id", currentUser.id);
 
-        // Calculate new expiry date
-        const currentExpiry = profile?.premium_expires_at ? new Date(profile.premium_expires_at) : new Date();
-        const newExpiry = addDays(currentExpiry > new Date() ? currentExpiry : new Date(), 14);
-
-        // Update profile to premium
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({ 
-            is_premium: true,
-            premium_expires_at: newExpiry.toISOString()
-          })
-          .eq("user_id", user.id);
-
-        if (updateError) {
-          console.error("Profile update error:", updateError);
-          toast.error("Failed to activate premium");
-          setIsRedeemingPromo(false);
-          return;
-        }
-
-        // Trigger confetti
-        confetti({
-          particleCount: 150,
-          spread: 100,
-          origin: { y: 0.6 },
-          colors: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b']
-        });
-
-        toast.success("🎉 Premium activated for 14 days!", {
-          description: "Enjoy all premium features!",
-          duration: 5000,
-        });
-
-        setPromoCode("");
-        await refreshProfile();
-      } else {
-        toast.error("Invalid promo code");
+      if (updateError) {
+        console.error("Profile update error:", updateError);
+        toast.error("Failed to activate premium: " + updateError.message);
+        setIsRedeemingPromo(false);
+        return;
       }
+
+      // Add promo redemption record
+      const { error: redemptionError } = await supabase
+        .from("promo_redemptions")
+        .insert({ user_id: currentUser.id, promo_code: code });
+
+      if (redemptionError) {
+        console.error("Redemption record error:", redemptionError);
+        // Don't fail - premium is already activated
+      }
+
+      // Trigger confetti
+      confetti({
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.6 },
+        colors: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b']
+      });
+
+      toast.success("🎉 Premium activated for 14 days!", {
+        description: "Enjoy all premium features!",
+        duration: 5000,
+      });
+
+      setPromoCode("");
+      await refreshProfile();
     } catch (error) {
-      console.error(error);
+      console.error("Promo error:", error);
       toast.error("Failed to redeem promo code");
     } finally {
       setIsRedeemingPromo(false);

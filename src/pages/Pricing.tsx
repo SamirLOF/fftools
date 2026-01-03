@@ -237,11 +237,11 @@ const Pricing = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-foreground mb-2">What payment methods do you accept?</h3>
-                  <p className="text-sm text-muted-foreground">Contact us on Telegram for payment options including UPI, PayPal, and more.</p>
+                  <p className="text-sm text-muted-foreground">Contact us on Telegram for payment via Binance cryptocurrency.</p>
                 </div>
                 <div>
-                  <h3 className="font-medium text-foreground mb-2">Do you offer student discounts?</h3>
-                  <p className="text-sm text-muted-foreground">Yes! Students get 50% off on Pro and Ultimate plans.</p>
+                  <h3 className="font-medium text-foreground mb-2">Do you offer dataminer discounts?</h3>
+                  <p className="text-sm text-muted-foreground">Yes! Dataminers get 50% off on Pro and Ultimate plans.</p>
                 </div>
               </div>
             </motion.div>

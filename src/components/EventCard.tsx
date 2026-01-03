@@ -44,7 +44,7 @@ const EventCard = ({ title, image, startDate, endDate, details, link }: EventCar
 
         {/* Content */}
         <div className="p-3">
-          <h3 className="font-medium text-foreground text-sm leading-tight line-clamp-2">
+          <h3 className="font-medium text-foreground text-sm leading-tight" title={title}>
             {title || "Untitled Event"}
           </h3>
           <p className="text-xs text-muted-foreground mt-1.5">
