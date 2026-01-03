@@ -314,61 +314,8 @@ const EventDetailDialog = ({
           <div className="p-3 rounded-xl bg-secondary/30 border border-border/50 space-y-2">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">Download Banner</p>
             
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={downloadWithWatermark}
-              disabled={isDownloading}
-              className="w-full gap-2 rounded-xl border-border/50"
-            >
-              {isDownloading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              Download with Watermark (Free)
-            </Button>
-            
-            {!adWatched ? (
-              watchingAd ? (
-                <div className="p-4 rounded-xl bg-primary/10 border border-primary/30 text-center space-y-3">
-                  <div className="flex items-center justify-center gap-2 text-primary font-medium">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Watching Ad...
-                  </div>
-                  
-                  <div className="w-full min-h-[100px] bg-secondary/50 rounded-lg flex items-center justify-center overflow-hidden">
-                    <ins
-                      className="adsbygoogle"
-                      style={{ display: "block", width: "100%", height: "100px" }}
-                      data-ad-client="ca-pub-6771046263927846"
-                      data-ad-slot="auto"
-                      data-ad-format="auto"
-                      data-full-width-responsive="true"
-                    />
-                  </div>
-                  
-                  <div className="relative w-full h-2 bg-secondary rounded-full overflow-hidden">
-                    <div 
-                      className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-1000 ease-linear"
-                      style={{ width: `${((7 - adCountdown) / 7) * 100}%` }}
-                    />
-                  </div>
-                  <p className="text-2xl font-bold text-primary">{adCountdown}s</p>
-                  <p className="text-xs text-muted-foreground">Please wait for the ad to complete</p>
-                </div>
-              ) : (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={watchAd}
-                  className="w-full gap-2 rounded-xl"
-                >
-                  <Play className="w-4 h-4" />
-                  Watch Ad to Download Without Watermark
-                </Button>
-              )
-            ) : (
+            {/* Premium users get direct download without watermark */}
+            {isPremium ? (
               <Button
                 size="sm"
                 onClick={downloadWithoutWatermark}
@@ -378,10 +325,85 @@ const EventDetailDialog = ({
                 {isDownloading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Download className="w-4 h-4" />
+                  <>
+                    <Crown className="w-4 h-4" />
+                    <Download className="w-4 h-4" />
+                  </>
                 )}
-                Download Without Watermark
+                Download HD (Premium)
               </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadWithWatermark}
+                  disabled={isDownloading}
+                  className="w-full gap-2 rounded-xl border-border/50"
+                >
+                  {isDownloading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4" />
+                  )}
+                  Download with Watermark (Free)
+                </Button>
+                
+                {!adWatched ? (
+                  watchingAd ? (
+                    <div className="p-4 rounded-xl bg-primary/10 border border-primary/30 text-center space-y-3">
+                      <div className="flex items-center justify-center gap-2 text-primary font-medium">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Watching Ad...
+                      </div>
+                      
+                      <div className="w-full min-h-[100px] bg-secondary/50 rounded-lg flex items-center justify-center overflow-hidden">
+                        <ins
+                          className="adsbygoogle"
+                          style={{ display: "block", width: "100%", height: "100px" }}
+                          data-ad-client="ca-pub-6771046263927846"
+                          data-ad-slot="auto"
+                          data-ad-format="auto"
+                          data-full-width-responsive="true"
+                        />
+                      </div>
+                      
+                      <div className="relative w-full h-2 bg-secondary rounded-full overflow-hidden">
+                        <div 
+                          className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-1000 ease-linear"
+                          style={{ width: `${((7 - adCountdown) / 7) * 100}%` }}
+                        />
+                      </div>
+                      <p className="text-2xl font-bold text-primary">{adCountdown}s</p>
+                      <p className="text-xs text-muted-foreground">Please wait for the ad to complete</p>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={watchAd}
+                      className="w-full gap-2 rounded-xl"
+                    >
+                      <Play className="w-4 h-4" />
+                      Watch Ad to Download Without Watermark
+                    </Button>
+                  )
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={downloadWithoutWatermark}
+                    disabled={isDownloading}
+                    className="w-full gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/80"
+                  >
+                    {isDownloading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4" />
+                    )}
+                    Download Without Watermark
+                  </Button>
+                )}
+              </>
             )}
           </div>
 

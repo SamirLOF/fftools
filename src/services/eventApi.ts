@@ -42,7 +42,33 @@ const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 export const fetchEvents = async (region: string): Promise<ApiResponse> => {
   const regionUpper = region.toUpperCase();
 
-  // 1) Prefer Lovable Cloud function (most reliable)
+  // Helper for timeout
+  const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 8000) => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(id);
+      return response;
+    } catch (error) {
+      clearTimeout(id);
+      throw error;
+    }
+  };
+
+  // 1) Try direct API first (fastest if CORS works)
+  try {
+    const directUrl = `${BASE_URL}?region=${regionUpper}&key=${API_KEY}`;
+    const response = await fetchWithTimeout(directUrl, {}, 5000);
+    if (response.ok) {
+      const data: ApiResponse = await response.json();
+      return data;
+    }
+  } catch {
+    // Direct failed, try Cloud function
+  }
+
+  // 2) Try Lovable Cloud function
   try {
     const { data, error } = await supabase.functions.invoke<ApiResponse>(
       "events-proxy",
@@ -56,19 +82,21 @@ export const fetchEvents = async (region: string): Promise<ApiResponse> => {
 
     return data;
   } catch {
-    // 2) Fallback: public proxy
-    const apiUrl = `${BASE_URL}?region=${regionUpper}&key=${API_KEY}`;
-    const proxyUrl = `${CORS_PROXY}${encodeURIComponent(apiUrl)}`;
-
-    const response = await fetch(proxyUrl);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch events: ${response.statusText}`);
-    }
-
-    const data: ApiResponse = await response.json();
-    return data;
+    // Cloud function failed, try fallback proxy
   }
+
+  // 3) Fallback: public proxy
+  const apiUrl = `${BASE_URL}?region=${regionUpper}&key=${API_KEY}`;
+  const proxyUrl = `${CORS_PROXY}${encodeURIComponent(apiUrl)}`;
+
+  const response = await fetchWithTimeout(proxyUrl, {}, 8000);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch events: ${response.statusText}`);
+  }
+
+  const data: ApiResponse = await response.json();
+  return data;
 };
 
 export const getEventStatus = (startDate: string, endDate: string): "upcoming" | "active" | "ended" => {

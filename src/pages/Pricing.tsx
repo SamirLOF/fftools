@@ -2,11 +2,10 @@ import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import AppSidebar from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Check, Star, Zap, Crown, MessageCircle, Gift, ExternalLink } from "lucide-react";
+import { Check, Star, Zap, Crown, MessageCircle, Gift, ExternalLink, BadgeCheck, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const plans = [
   {
@@ -59,18 +58,15 @@ const plans = [
 ];
 
 const Pricing = () => {
-  const [promoCode, setPromoCode] = useState("");
-
-  const handleApplyPromo = () => {
-    if (!promoCode.trim()) {
-      toast.error("Please enter a promo code");
-      return;
-    }
-    toast.info("Promo code will be applied at checkout");
-  };
+  const { isPremium } = useAuth();
+  const navigate = useNavigate();
 
   const handleContactPayment = () => {
     window.open("https://t.me/samirrahman96", "_blank");
+  };
+
+  const handleRedeemPromo = () => {
+    navigate("/account");
   };
 
   return (
@@ -94,76 +90,102 @@ const Pricing = () => {
               </p>
             </motion.div>
 
+            {/* Premium Status Badge */}
+            {isPremium && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/50 flex items-center justify-center gap-3"
+              >
+                <BadgeCheck className="w-6 h-6 text-primary" />
+                <span className="text-lg font-semibold text-foreground">Pro Subscription Active</span>
+                <Crown className="w-5 h-5 text-primary" />
+              </motion.div>
+            )}
+
             {/* Pricing Cards */}
             <div className="grid md:grid-cols-3 gap-6 mb-8">
-              {plans.map((plan, index) => (
-                <motion.div
-                  key={plan.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                  className={cn(
-                    "relative rounded-2xl border p-6 flex flex-col",
-                    plan.featured
-                      ? "bg-gradient-to-b from-primary/10 to-card border-primary/50 card-glow-hover"
-                      : "bg-card border-border/50 card-glow"
-                  )}
-                >
-                  {plan.featured && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full">
-                      Most Popular
-                    </div>
-                  )}
-
-                  <div className="mb-6">
-                    <div className={cn(
-                      "p-2.5 rounded-xl w-fit mb-4",
-                      plan.featured ? "bg-primary/20" : "bg-secondary"
-                    )}>
-                      <plan.icon className={cn(
-                        "w-5 h-5",
-                        plan.featured ? "text-primary" : "text-muted-foreground"
-                      )} />
-                    </div>
-                    <h3 className="text-xl font-semibold text-foreground">{plan.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
-                  </div>
-
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground ml-1">/{plan.period}</span>
-                  </div>
-
-                  <ul className="space-y-3 flex-1 mb-6">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2.5">
-                        <div className={cn(
-                          "p-0.5 rounded-full mt-0.5",
-                          plan.featured ? "bg-primary/20" : "bg-secondary"
-                        )}>
-                          <Check className={cn(
-                            "w-3 h-3",
-                            plan.featured ? "text-primary" : "text-muted-foreground"
-                          )} />
-                        </div>
-                        <span className="text-sm text-foreground/80">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button
+              {plans.map((plan, index) => {
+                const isCurrentPlan = isPremium && plan.name === "Pro";
+                return (
+                  <motion.div
+                    key={plan.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * index }}
                     className={cn(
-                      "w-full rounded-xl",
+                      "relative rounded-2xl border p-6 flex flex-col",
                       plan.featured
-                        ? "bg-primary hover:bg-primary/90"
-                        : "bg-secondary hover:bg-secondary/80 text-foreground"
+                        ? "bg-gradient-to-b from-primary/10 to-card border-primary/50 card-glow-hover"
+                        : "bg-card border-border/50 card-glow",
+                      isCurrentPlan && "ring-2 ring-primary"
                     )}
-                    onClick={plan.price === "$0" ? undefined : handleContactPayment}
                   >
-                    {plan.price === "$0" ? "Get Started" : "Upgrade Now"}
-                  </Button>
-                </motion.div>
-              ))}
+                    {plan.featured && !isCurrentPlan && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full">
+                        Most Popular
+                      </div>
+                    )}
+                    {isCurrentPlan && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                        <BadgeCheck className="w-3 h-3" />
+                        Active
+                      </div>
+                    )}
+
+                    <div className="mb-6">
+                      <div className={cn(
+                        "p-2.5 rounded-xl w-fit mb-4",
+                        plan.featured ? "bg-primary/20" : "bg-secondary"
+                      )}>
+                        <plan.icon className={cn(
+                          "w-5 h-5",
+                          plan.featured ? "text-primary" : "text-muted-foreground"
+                        )} />
+                      </div>
+                      <h3 className="text-xl font-semibold text-foreground">{plan.name}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
+                    </div>
+
+                    <div className="mb-6">
+                      <span className="text-4xl font-bold text-foreground">{plan.price}</span>
+                      <span className="text-muted-foreground ml-1">/{plan.period}</span>
+                    </div>
+
+                    <ul className="space-y-3 flex-1 mb-6">
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-start gap-2.5">
+                          <div className={cn(
+                            "p-0.5 rounded-full mt-0.5",
+                            plan.featured ? "bg-primary/20" : "bg-secondary"
+                          )}>
+                            <Check className={cn(
+                              "w-3 h-3",
+                              plan.featured ? "text-primary" : "text-muted-foreground"
+                            )} />
+                          </div>
+                          <span className="text-sm text-foreground/80">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button
+                      className={cn(
+                        "w-full rounded-xl",
+                        isCurrentPlan
+                          ? "bg-green-500/20 text-green-500 border border-green-500/50 hover:bg-green-500/30"
+                          : plan.featured
+                            ? "bg-primary hover:bg-primary/90"
+                            : "bg-secondary hover:bg-secondary/80 text-foreground"
+                      )}
+                      onClick={plan.price === "$0" || isCurrentPlan ? undefined : handleContactPayment}
+                      disabled={isCurrentPlan}
+                    >
+                      {isCurrentPlan ? "Current Plan" : plan.price === "$0" ? "Get Started" : "Upgrade Now"}
+                    </Button>
+                  </motion.div>
+                );
+              })}
             </div>
 
             {/* Promo Code & Contact */}
@@ -181,17 +203,17 @@ const Pricing = () => {
                   </div>
                   <h3 className="font-semibold text-foreground">Have a Promo Code?</h3>
                 </div>
-                <div className="flex gap-3">
-                  <Input
-                    placeholder="Enter promo code"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    className="flex-1 h-11 rounded-xl bg-secondary/50 border-border/50"
-                  />
-                  <Button onClick={handleApplyPromo} className="rounded-xl h-11 px-5">
-                    Apply
-                  </Button>
-                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Redeem your promo code to unlock Premium features instantly!
+                </p>
+                <Button 
+                  onClick={handleRedeemPromo} 
+                  className="w-full rounded-xl h-11 gap-2"
+                >
+                  <Gift className="w-4 h-4" />
+                  Redeem Promo Code
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
               </div>
 
               {/* Contact for Payment */}
