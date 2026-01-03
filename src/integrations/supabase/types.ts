@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      custom_events: {
+        Row: {
+          banner: string
+          created_at: string
+          created_by: string
+          details: string | null
+          end_date: string
+          event_type: string
+          id: string
+          link: string | null
+          region: string
+          start_date: string
+          title: string
+        }
+        Insert: {
+          banner: string
+          created_at?: string
+          created_by: string
+          details?: string | null
+          end_date: string
+          event_type?: string
+          id?: string
+          link?: string | null
+          region: string
+          start_date: string
+          title: string
+        }
+        Update: {
+          banner?: string
+          created_at?: string
+          created_by?: string
+          details?: string | null
+          end_date?: string
+          event_type?: string
+          id?: string
+          link?: string | null
+          region?: string
+          start_date?: string
+          title?: string
+        }
+        Relationships: []
+      }
       event_history: {
         Row: {
           banner: string

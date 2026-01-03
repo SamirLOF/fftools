@@ -9,6 +9,7 @@ import About from "./pages/About";
 import Pricing from "./pages/Pricing";
 import Tools from "./pages/Tools";
 import Login from "./pages/Login";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const AnimatedRoutes = () => {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/tools" element={<Tools />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
