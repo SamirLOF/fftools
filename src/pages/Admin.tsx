@@ -12,6 +12,7 @@ import {
   Trash2, 
   Users, 
   Calendar,
+  Settings,
   AlertTriangle,
   Loader2,
   X
@@ -47,7 +48,7 @@ const Admin = () => {
   
   const [events, setEvents] = useState<CustomEvent[]>([]);
   const [admins, setAdmins] = useState<AdminUser[]>([]);
-  const [activeTab, setActiveTab] = useState<"events" | "admins">("events");
+  const [activeTab, setActiveTab] = useState<"events" | "admins" | "settings">("events");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Event form
@@ -244,7 +245,7 @@ const Admin = () => {
             </motion.div>
 
             {/* Tabs */}
-            <div className="flex gap-2 mb-8">
+            <div className="flex gap-2 mb-8 flex-wrap">
               <Button
                 variant={activeTab === "events" ? "default" : "secondary"}
                 onClick={() => setActiveTab("events")}
@@ -260,6 +261,14 @@ const Admin = () => {
               >
                 <Users className="w-4 h-4" />
                 Admins
+              </Button>
+              <Button
+                variant={activeTab === "settings" ? "default" : "secondary"}
+                onClick={() => setActiveTab("settings")}
+                className="rounded-xl gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                Settings
               </Button>
             </div>
 
@@ -474,6 +483,78 @@ const Admin = () => {
                         )}
                       </div>
                     ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === "settings" && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-6"
+              >
+                {/* Settings Panel */}
+                <div className="bg-card rounded-2xl border border-border/50 p-6 card-glow">
+                  <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Settings className="w-5 h-5 text-primary" />
+                    Site Settings
+                  </h2>
+                  
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-secondary/30 border border-border/30">
+                      <h3 className="font-medium text-foreground mb-2">Banner Download</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Users can download banners with "LEAKS OF FF" watermark for free, or watch an ad to download without watermark.
+                      </p>
+                    </div>
+                    
+                    <div className="p-4 rounded-xl bg-secondary/30 border border-border/30">
+                      <h3 className="font-medium text-foreground mb-2">Admin Permissions</h3>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• Add and delete custom events</li>
+                        <li>• Manage admin users</li>
+                        <li>• Access all site settings</li>
+                        <li>• View event history</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-secondary/30 border border-border/30">
+                      <h3 className="font-medium text-foreground mb-2">Quick Stats</h3>
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        <div className="p-3 rounded-lg bg-primary/10 text-center">
+                          <p className="text-2xl font-bold text-primary">{events.length}</p>
+                          <p className="text-xs text-muted-foreground">Custom Events</p>
+                        </div>
+                        <div className="p-3 rounded-lg bg-primary/10 text-center">
+                          <p className="text-2xl font-bold text-primary">{admins.length}</p>
+                          <p className="text-xs text-muted-foreground">Admin Users</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30">
+                      <h3 className="font-medium text-destructive mb-2">Danger Zone</h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Be careful with these actions. They cannot be undone.
+                      </p>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="rounded-xl"
+                        onClick={() => {
+                          if (confirm("Are you sure you want to delete ALL custom events?")) {
+                            supabase.from("custom_events").delete().neq("id", "").then(() => {
+                              toast.success("All events deleted");
+                              fetchEvents();
+                            });
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete All Events
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </motion.div>
