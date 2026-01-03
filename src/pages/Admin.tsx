@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { 
   Shield, 
   Plus, 
@@ -15,12 +16,15 @@ import {
   Settings,
   AlertTriangle,
   Loader2,
-  X
+  X,
+  Wrench,
+  Clock
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useMaintenance } from "@/hooks/useMaintenance";
 
 interface CustomEvent {
   id: string;
@@ -46,11 +50,15 @@ const Admin = () => {
   const { isAdmin, isLoading, profile } = useAuth();
   const username = profile?.username;
   const navigate = useNavigate();
+  const { maintenance, updateMaintenance } = useMaintenance();
   
   const [events, setEvents] = useState<CustomEvent[]>([]);
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [activeTab, setActiveTab] = useState<"events" | "admins" | "settings">("events");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState("");
+  const [maintenanceEndTime, setMaintenanceEndTime] = useState("");
+  const [isUpdatingMaintenance, setIsUpdatingMaintenance] = useState(false);
   
   // Event form
   const [eventForm, setEventForm] = useState({
@@ -66,6 +74,12 @@ const Admin = () => {
   
   // Admin form
   const [newAdmin, setNewAdmin] = useState("");
+
+  // Sync maintenance state
+  useEffect(() => {
+    setMaintenanceMessage(maintenance.message || "Site is under maintenance");
+    setMaintenanceEndTime(maintenance.end_time || "");
+  }, [maintenance]);
 
   useEffect(() => {
     if (!isLoading && !isAdmin) {
@@ -495,6 +509,95 @@ const Admin = () => {
                 animate={{ opacity: 1 }}
                 className="space-y-6"
               >
+                {/* Maintenance Mode */}
+                <div className={`bg-card rounded-2xl border p-6 card-glow ${maintenance.enabled ? "border-amber-500/50" : "border-border/50"}`}>
+                  <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Wrench className={`w-5 h-5 ${maintenance.enabled ? "text-amber-500" : "text-primary"}`} />
+                    Maintenance Mode
+                    {maintenance.enabled && (
+                      <span className="text-xs bg-amber-500/20 text-amber-500 px-2 py-0.5 rounded-full">ACTIVE</span>
+                    )}
+                  </h2>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/30">
+                      <div>
+                        <h3 className="font-medium text-foreground">Enable Maintenance Mode</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Show a maintenance banner to all users
+                        </p>
+                      </div>
+                      <Switch
+                        checked={maintenance.enabled}
+                        onCheckedChange={async (checked) => {
+                          setIsUpdatingMaintenance(true);
+                          const success = await updateMaintenance({ enabled: checked });
+                          if (success) {
+                            toast.success(checked ? "Maintenance mode enabled" : "Maintenance mode disabled");
+                          } else {
+                            toast.error("Failed to update maintenance mode");
+                          }
+                          setIsUpdatingMaintenance(false);
+                        }}
+                        disabled={isUpdatingMaintenance}
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-amber-500" />
+                          Maintenance Message
+                        </Label>
+                        <Input
+                          value={maintenanceMessage}
+                          onChange={(e) => setMaintenanceMessage(e.target.value)}
+                          placeholder="Site is under maintenance"
+                          className="rounded-xl bg-secondary/50"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-primary" />
+                          End Time (optional - for countdown)
+                        </Label>
+                        <Input
+                          type="datetime-local"
+                          value={maintenanceEndTime}
+                          onChange={(e) => setMaintenanceEndTime(e.target.value)}
+                          className="rounded-xl bg-secondary/50"
+                        />
+                      </div>
+
+                      <Button
+                        onClick={async () => {
+                          setIsUpdatingMaintenance(true);
+                          const success = await updateMaintenance({
+                            message: maintenanceMessage,
+                            end_time: maintenanceEndTime || null
+                          });
+                          if (success) {
+                            toast.success("Maintenance settings saved");
+                          } else {
+                            toast.error("Failed to save settings");
+                          }
+                          setIsUpdatingMaintenance(false);
+                        }}
+                        disabled={isUpdatingMaintenance}
+                        className="rounded-xl gap-2"
+                      >
+                        {isUpdatingMaintenance ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Settings className="w-4 h-4" />
+                        )}
+                        Save Settings
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Settings Panel */}
                 <div className="bg-card rounded-2xl border border-border/50 p-6 card-glow">
                   <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -517,6 +620,7 @@ const Admin = () => {
                         <li>• Manage admin users</li>
                         <li>• Access all site settings</li>
                         <li>• View event history</li>
+                        <li>• Control maintenance mode</li>
                       </ul>
                     </div>
 
