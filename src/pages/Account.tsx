@@ -112,8 +112,11 @@ const Account = () => {
     setIsRedeemingPromo(true);
 
     try {
-      // Validate promo code first
-      if (code !== "LOF26") {
+      // Validate promo code and get days
+      let premiumDays = 0;
+      if (code === "LOF5K") {
+        premiumDays = 3;
+      } else {
         toast.error("Invalid promo code");
         setIsRedeemingPromo(false);
         return;
@@ -139,7 +142,7 @@ const Account = () => {
 
       // Calculate new expiry date
       const currentExpiry = profile?.premium_expires_at ? new Date(profile.premium_expires_at) : new Date();
-      const newExpiry = addDays(currentExpiry > new Date() ? currentExpiry : new Date(), 14);
+      const newExpiry = addDays(currentExpiry > new Date() ? currentExpiry : new Date(), premiumDays);
 
       // Update profile to premium first
       const { error: updateError } = await supabase
@@ -175,7 +178,7 @@ const Account = () => {
         colors: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b']
       });
 
-      toast.success("🎉 Premium activated for 14 days!", {
+      toast.success(`🎉 Premium activated for ${premiumDays} days!`, {
         description: "Enjoy all premium features!",
         duration: 5000,
       });

@@ -1,7 +1,13 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import AppSidebar from "@/components/AppSidebar";
-import { Calendar, Users, Globe, Zap, Shield, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, Users, Globe, Zap, Shield, Heart, Send } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const features = [
   {
@@ -37,6 +43,69 @@ const features = [
 ];
 
 const About = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmitRequest = async () => {
+    if (!user) {
+      toast.error("Please sign in first");
+      navigate("/auth");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Find samir1's user_id
+      const { data: adminProfile, error: profileError } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .ilike("username", "samir1")
+        .maybeSingle();
+
+      if (profileError || !adminProfile) {
+        toast.error("Admin user not found");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Check if already friends or request sent
+      const { data: existingRequest } = await supabase
+        .from("friend_requests")
+        .select("id, status")
+        .or(
+          `and(from_user_id.eq.${user.id},to_user_id.eq.${adminProfile.user_id}),and(from_user_id.eq.${adminProfile.user_id},to_user_id.eq.${user.id})`,
+        )
+        .limit(1)
+        .maybeSingle();
+
+      if (existingRequest) {
+        toast.info("Request already sent or you're already friends!");
+        navigate("/chat");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Send friend request
+      const { error: requestError } = await supabase
+        .from("friend_requests")
+        .insert({
+          from_user_id: user.id,
+          to_user_id: adminProfile.user_id,
+        });
+
+      if (requestError) {
+        toast.error("Failed to send request");
+      } else {
+        toast.success("Friend request sent to Samir1!");
+        navigate("/chat");
+      }
+    } catch {
+      toast.error("Something went wrong");
+    }
+    setIsSubmitting(false);
+  };
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background flex">
@@ -97,6 +166,27 @@ const About = () => {
                   </motion.div>
                 ))}
               </div>
+            </motion.div>
+
+            {/* Submit Request */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-card rounded-2xl border border-border/50 p-8 mb-12 card-glow text-center"
+            >
+              <h2 className="text-xl font-semibold text-foreground mb-3">Need Help?</h2>
+              <p className="text-muted-foreground mb-6">
+                Have questions or suggestions? Send a request to connect with our admin team.
+              </p>
+              <Button
+                onClick={handleSubmitRequest}
+                disabled={isSubmitting}
+                className="gap-2"
+              >
+                <Send className="w-4 h-4" />
+                {isSubmitting ? "Sending..." : "Submit Request"}
+              </Button>
             </motion.div>
 
             {/* Credits */}
