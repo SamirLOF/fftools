@@ -42,6 +42,19 @@ const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 export const fetchEvents = async (region: string): Promise<ApiResponse> => {
   const regionUpper = region.toUpperCase();
 
+  const withTimeout = async <T,>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    timeoutMessage: string,
+  ): Promise<T> => {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs),
+      ),
+    ]);
+  };
+
   const fetchJsonWithTimeout = async (
     url: string,
     options: RequestInit = {},
@@ -61,6 +74,13 @@ export const fetchEvents = async (region: string): Promise<ApiResponse> => {
       }
 
       return (await res.json()) as ApiResponse;
+    } catch (e) {
+      // Normalize AbortError message (mobile browsers often show "signal is aborted without reason")
+      const name = e instanceof Error ? e.name : "";
+      if (name === "AbortError") {
+        throw new Error("Request timed out. Please tap refresh.");
+      }
+      throw e as Error;
     } finally {
       clearTimeout(id);
     }
@@ -68,30 +88,35 @@ export const fetchEvents = async (region: string): Promise<ApiResponse> => {
 
   const directUrl = `${BASE_URL}?region=${regionUpper}&key=${API_KEY}`;
 
-  // Try Cloud function first (most reliable), then direct, then proxy
+  // Prefer backend proxy (no CORS, most reliable). Add a timeout so we never get stuck.
   try {
-    const { data, error } = await supabase.functions.invoke<ApiResponse>(
-      "events-proxy",
-      { body: { region: regionUpper } },
+    const invokePromise = supabase.functions.invoke<ApiResponse>("events-proxy", {
+      body: { region: regionUpper },
+    });
+
+    const { data, error } = await withTimeout(
+      invokePromise,
+      9000,
+      "Events server took too long. Please tap refresh.",
     );
 
-    if (!error && data) {
-      return data;
-    }
+    if (error) throw error;
+    if (!data) throw new Error("No data returned");
+    return data;
   } catch {
-    // Cloud function failed, continue to fallbacks
+    // Continue to fallbacks
   }
 
-  // Try direct API
+  // Fallback 1: direct API (may fail due to CORS)
   try {
-    return await fetchJsonWithTimeout(directUrl, {}, 8000);
+    return await fetchJsonWithTimeout(directUrl, {}, 12000);
   } catch {
-    // Direct failed, continue to proxy
+    // Continue
   }
 
-  // Last resort: public CORS proxy
+  // Fallback 2: public proxy
   const proxyUrl = `${CORS_PROXY}${encodeURIComponent(directUrl)}`;
-  return await fetchJsonWithTimeout(proxyUrl, {}, 10000);
+  return await fetchJsonWithTimeout(proxyUrl, {}, 15000);
 };
 
 export const getEventStatus = (startDate: string, endDate: string): "upcoming" | "active" | "ended" => {
