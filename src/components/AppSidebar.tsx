@@ -1,8 +1,10 @@
-import { Calendar, Info, CreditCard, Sparkles, Menu, LogIn } from "lucide-react";
+import { Calendar, Info, CreditCard, Sparkles, Menu, LogIn, Shield, Bell, BellOff } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
+import { useAdmin } from "@/hooks/useAdmin";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const navItems = [
   { title: "Events", url: "/", icon: Calendar },
@@ -15,6 +17,13 @@ const navItems = [
 const AppSidebar = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const { isAdmin } = useAdmin();
+  const { isSupported, isEnabled, requestPermission } = useNotifications();
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUsername(localStorage.getItem("ff_username"));
+  }, []);
 
   return (
     <>
@@ -57,6 +66,20 @@ const AppSidebar = () => {
             </div>
           </div>
 
+          {/* User Info */}
+          {username && (
+            <div className="mb-4 px-2">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/30 border border-border/30">
+                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                  <span className="text-xs font-medium text-primary uppercase">
+                    {username[0]}
+                  </span>
+                </div>
+                <span className="text-sm font-medium text-foreground truncate">{username}</span>
+              </div>
+            </div>
+          )}
+
           {/* Navigation */}
           <nav className="flex-1 space-y-1">
             {navItems.map((item) => {
@@ -78,7 +101,48 @@ const AppSidebar = () => {
                 </NavLink>
               );
             })}
+            
+            {/* Admin Link - Only visible to admins */}
+            {isAdmin && (
+              <NavLink
+                to="/admin"
+                onClick={() => setIsOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                  location.pathname === "/admin"
+                    ? "bg-primary/15 text-primary shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                )}
+              >
+                <Shield className="w-4 h-4" />
+                Admin
+              </NavLink>
+            )}
           </nav>
+
+          {/* Notifications Toggle */}
+          {isSupported && (
+            <div className="mb-4">
+              <Button
+                variant={isEnabled ? "secondary" : "outline"}
+                size="sm"
+                onClick={requestPermission}
+                className="w-full rounded-xl gap-2 justify-start"
+              >
+                {isEnabled ? (
+                  <>
+                    <Bell className="w-4 h-4 text-primary" />
+                    <span className="text-xs">Notifications On</span>
+                  </>
+                ) : (
+                  <>
+                    <BellOff className="w-4 h-4" />
+                    <span className="text-xs">Enable Notifications</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="pt-4 border-t border-border/50">
