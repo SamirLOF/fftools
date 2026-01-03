@@ -225,7 +225,7 @@ const EventDetailDialog = ({
       onOpenChange(open);
       if (!open) setAdWatched(false);
     }}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden rounded-2xl border-border/50 bg-card [&>button]:hidden">
+      <DialogContent className="max-w-lg p-0 overflow-hidden rounded-2xl border-border/50 bg-card">
         {/* Banner Image */}
         <div className="relative aspect-[16/10] overflow-hidden bg-muted/50">
           <img
