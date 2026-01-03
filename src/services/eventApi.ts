@@ -42,61 +42,71 @@ const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 export const fetchEvents = async (region: string): Promise<ApiResponse> => {
   const regionUpper = region.toUpperCase();
 
-  // Helper for timeout
-  const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 8000) => {
+  const fetchJsonWithTimeout = async (
+    url: string,
+    options: RequestInit = {},
+    timeoutMs = 5000,
+  ): Promise<ApiResponse> => {
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+
     try {
-      const response = await fetch(url, { ...options, signal: controller.signal });
+      const res = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      return (await res.json()) as ApiResponse;
+    } finally {
       clearTimeout(id);
-      return response;
-    } catch (error) {
-      clearTimeout(id);
-      throw error;
     }
   };
 
-  // 1) Try direct API first (fastest if CORS works)
-  try {
-    const directUrl = `${BASE_URL}?region=${regionUpper}&key=${API_KEY}`;
-    const response = await fetchWithTimeout(directUrl, {}, 5000);
-    if (response.ok) {
-      const data: ApiResponse = await response.json();
-      return data;
-    }
-  } catch {
-    // Direct failed, try Cloud function
-  }
+  const directUrl = `${BASE_URL}?region=${regionUpper}&key=${API_KEY}`;
 
-  // 2) Try Lovable Cloud function
-  try {
+  // Start the fastest options in parallel (prevents waiting 5s for a CORS fail)
+  const directPromise = fetchJsonWithTimeout(directUrl, {}, 2500);
+
+  const cloudPromise = (async () => {
     const { data, error } = await supabase.functions.invoke<ApiResponse>(
       "events-proxy",
-      {
-        body: { region: regionUpper },
-      }
+      { body: { region: regionUpper } },
     );
 
     if (error) throw error;
     if (!data) throw new Error("No data returned");
-
     return data;
+  })();
+
+  const firstSuccess = <T,>(promises: Promise<T>[]) =>
+    new Promise<T>((resolve, reject) => {
+      let rejected = 0;
+      const errors: unknown[] = [];
+
+      promises.forEach((p) => {
+        p.then(resolve).catch((err) => {
+          errors.push(err);
+          rejected += 1;
+          if (rejected === promises.length) {
+            reject(errors[0] ?? new Error("All requests failed"));
+          }
+        });
+      });
+    });
+
+  try {
+    // First successful response wins (faster than waiting for a timeout then trying the next fallback)
+    return await firstSuccess([directPromise, cloudPromise]);
   } catch {
-    // Cloud function failed, try fallback proxy
+    // Both failed → last resort proxy
   }
 
-  // 3) Fallback: public proxy
-  const apiUrl = `${BASE_URL}?region=${regionUpper}&key=${API_KEY}`;
-  const proxyUrl = `${CORS_PROXY}${encodeURIComponent(apiUrl)}`;
-
-  const response = await fetchWithTimeout(proxyUrl, {}, 8000);
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch events: ${response.statusText}`);
-  }
-
-  const data: ApiResponse = await response.json();
-  return data;
+  const proxyUrl = `${CORS_PROXY}${encodeURIComponent(directUrl)}`;
+  return await fetchJsonWithTimeout(proxyUrl, {}, 8000);
 };
 
 export const getEventStatus = (startDate: string, endDate: string): "upcoming" | "active" | "ended" => {
