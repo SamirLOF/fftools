@@ -14,9 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Rajdhani', 'system-ui', 'sans-serif'],
-        display: ['Orbitron', 'sans-serif'],
-        anime: ['Black Ops One', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -52,14 +50,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        cursed: {
-          blue: "hsl(var(--cursed-blue))",
-          "blue-glow": "hsl(var(--cursed-blue-glow))",
-          purple: "hsl(var(--cursed-purple))",
-          "purple-glow": "hsl(var(--cursed-purple-glow))",
-          pink: "hsl(var(--cursed-pink))",
-        },
-        infinity: "hsl(var(--infinity))",
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
@@ -89,25 +79,10 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        shimmer: {
-          "0%": { backgroundPosition: "-200% 0" },
-          "100%": { backgroundPosition: "200% 0" },
-        },
-        float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10px)" },
-        },
-        "cursed-energy": {
-          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
-          "50%": { opacity: "1", transform: "scale(1.05)" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        shimmer: "shimmer 2s linear infinite",
-        float: "float 4s ease-in-out infinite",
-        "cursed-energy": "cursed-energy 3s ease-in-out infinite",
       },
     },
   },

@@ -1,4 +1,3 @@
-import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StatusBadgeProps {
@@ -9,13 +8,12 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
   return (
     <div
       className={cn(
-        "absolute top-3 right-3 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide",
+        "absolute top-2 right-2 z-10 px-2 py-0.5 rounded text-xs font-medium",
         status === "active"
-          ? "bg-success text-success-foreground status-pulse"
+          ? "bg-success text-success-foreground"
           : "bg-primary text-primary-foreground"
       )}
     >
-      <Sparkles className="w-3 h-3" />
       {status === "active" ? "Active" : "Upcoming"}
     </div>
   );

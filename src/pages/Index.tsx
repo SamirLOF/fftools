@@ -43,32 +43,32 @@ const Index = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background hexagon-grid">
+      <div className="min-h-screen bg-background">
         <Header
           selectedRegion={selectedRegion}
           onRegionChange={setSelectedRegion}
         />
 
-        <main className="container py-8 space-y-10">
+        <main className="container py-8 space-y-8">
           {/* Error State */}
           {error && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center py-12 gap-4 cursed-card rounded-xl"
+              className="flex flex-col items-center justify-center py-12 gap-4 bg-card rounded-lg border border-border"
             >
               <div className="flex items-center gap-3 text-destructive">
-                <AlertCircle className="w-6 h-6" />
-                <p className="text-xl font-display tracking-wide">CONNECTION FAILED</p>
+                <AlertCircle className="w-5 h-5" />
+                <p className="font-medium">Connection Failed</p>
               </div>
-              <p className="text-muted-foreground text-center max-w-md font-semibold text-sm">
+              <p className="text-muted-foreground text-center max-w-md text-sm">
                 {error.message}
               </p>
               <Button 
                 onClick={() => refetch()} 
                 variant="outline"
                 size="sm"
-                className="gap-2 font-bold border-primary/50 hover:bg-primary/20"
+                className="gap-2"
               >
                 <RefreshCw className="w-4 h-4" />
                 Retry
@@ -93,10 +93,10 @@ const Index = () => {
             <>
               {/* Events Section */}
               <section>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4">
                   <SectionTitle title="Active Events" />
                   {isFetching && !isLoading && (
-                    <RefreshCw className="w-5 h-5 animate-spin text-primary" />
+                    <RefreshCw className="w-4 h-4 animate-spin text-muted-foreground" />
                   )}
                 </div>
                 {sortedEvents.length > 0 ? (
@@ -118,8 +118,8 @@ const Index = () => {
                     ))}
                   </motion.div>
                 ) : (
-                  <div className="text-center py-12 cursed-card rounded-xl">
-                    <p className="text-muted-foreground font-semibold">
+                  <div className="text-center py-12 bg-card rounded-lg border border-border">
+                    <p className="text-muted-foreground">
                       No active events in this region.
                     </p>
                   </div>
@@ -151,36 +151,31 @@ const Index = () => {
               )}
 
               {/* Archive Link */}
-              <motion.section 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-center py-8 cursed-card rounded-xl"
-              >
-                <Archive className="w-10 h-10 mx-auto mb-3 text-secondary" />
-                <h3 className="text-xl font-display tracking-wider mb-2 purple-text">
-                  EVENT ARCHIVE
+              <section className="text-center py-8 bg-card rounded-lg border border-border">
+                <Archive className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-1">
+                  Event Archive
                 </h3>
-                <p className="text-muted-foreground mb-4 font-semibold text-sm">
+                <p className="text-muted-foreground mb-4 text-sm">
                   View expired events
                 </p>
                 <Link to="/history">
-                  <Button className="gap-2 font-bold cursed-gradient hover:opacity-90 text-white">
+                  <Button className="gap-2">
                     <Archive className="w-4 h-4" />
                     View Archive
                   </Button>
                 </Link>
-              </motion.section>
+              </section>
             </>
           )}
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-primary/20 py-6 mt-10">
+        <footer className="border-t py-6 mt-8">
           <div className="container text-center">
-            <p className="text-xs text-muted-foreground font-semibold">
-              © 2026 FF Events (JJK) — Credit{" "}
-              <span className="cursed-text font-bold">LEAKS OF FF</span>
+            <p className="text-xs text-muted-foreground">
+              © 2026 FF Events — Credit{" "}
+              <span className="font-medium text-foreground">LEAKS OF FF</span>
             </p>
           </div>
         </footer>
